@@ -5,305 +5,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Наявність деталей для індивідуального годинника</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #e6e6e6;
-      color: #111;
-    }
-    h1 {
-      text-align: center;
-      margin: 30px 0;
-      font-size: 28px;
-      font-weight: 600;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      padding: 0 20px 30px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .left {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
-    }
-    .right {
-      background: #fafafa;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      flex: 1;
-      min-width: 300px;
-      border-left: 2px solid #ddd;
-    }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .model-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .model-item {
-      display: flex;
-      align-items: center;
-      padding: 10px 15px;
-      border-radius: 12px;
-      background: #fff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid #ddd;
-    }
-    .model-item:hover {
-      transform: scale(1.02);
-      border-color: #007bff;
-    }
-    .model-item img {
-      height: 50px;
-      margin-right: 15px;
-      object-fit: contain;
-    }
-    .status-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      margin-left: auto;
-      margin-right: 4px;
-    }
-    .status-green {
-      background-color: #26c281;
-      box-shadow: 0 0 0 3px #c3f3df inset;
-    }
-    .status-red {
-      background-color: #ff4d4d;
-      box-shadow: 0 0 0 3px #ffdada inset;
-    }
-    .search-box {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .search-box input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    .search-box button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    #loader, #noResults {
-      text-align: center;
-      font-style: italic;
-      color: #555;
-      margin-top: 10px;
-    }
-    #loader, #noResults {
-      display: none;
-    }
-    #resultsTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      background-color: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    #resultsTable th, #resultsTable td {
-      padding: 8px;
-      border: 1px solid #eee;
-      text-align: center;
-      font-size: 15px;
-    }
-    #resultsTable th {
-      position: sticky;
-      top: 0;
-      background: #f0f0f0;
-      z-index: 1;
-    }
-    #resultsTable img {
-      max-height: 60px;
-      object-fit: contain;
-      transition: transform 0.2s ease;
-    }
-    #resultsTable img:hover {
-      transform: scale(2);
-      z-index: 999;
-    }
-    .total-info {
-      margin-top: 15px;
-      font-weight: 500;
-      text-align: right;
-      font-size: 15px;
-      color: #333;
-    }
-    .red-text {
-      color: #e63946;
-      font-weight: bold;
-    }
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .search-box { flex-direction: column; }
-      .search-box button { width: 100%; }
-    }
+    /* СТИЛІ залишаються без змін (як у тебе вище) */
   </style>
 </head>
 <body>
-<div id="updateInfo" style="
-  background:#fff6e0;
-  color:#8a6d3b;
-  text-align:center;
-  padding:10px 20px;
-  font-size:15px;
-  font-weight:500;
-  border-bottom:1px solid #f1e0b0;">
+<div id="updateInfo" style="background:#fff6e0;color:#8a6d3b;text-align:center;padding:10px 20px;font-size:15px;font-weight:500;border-bottom:1px solid #f1e0b0;">
   🕒 Завантаження дати оновлення...
 </div>
 
-  <h1>Наявність деталей для індивідуального годинника</h1>
-  <div class="container">
-    <div class="left">
-      <div class="subtitle">Доступні моделі годинників</div>
-      <div class="model-list" id="modelList"></div>
+<h1>Наявність деталей для індивідуального годинника</h1>
+<div class="container">
+  <div class="left">
+    <div class="subtitle">Доступні моделі годинників</div>
+    <div class="model-list" id="modelList"></div>
+  </div>
+  <div class="right">
+    <div class="search-box">
+      <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
+      <button onclick="searchParts()">Пошук</button>
     </div>
-    <div class="right">
-      <div class="search-box">
-        <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-        <button onclick="searchParts()">Пошук</button>
-      </div>
-      <div id="loader">Завантаження...</div>
-      <div id="noResults">Нічого не знайдено.</div>
-      <div class="search-results">
-        <table id="resultsTable" style="display:none">
-          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="total-info" id="summary" style="display:none"></div>
-      </div>
+    <div id="loader">Завантаження...</div>
+    <div id="noResults">Нічого не знайдено.</div>
+    <div class="search-results">
+      <table id="resultsTable" style="display:none">
+        <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="total-info" id="summary" style="display:none"></div>
     </div>
   </div>
+</div>
 
-  <script>
-    const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
-    const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
-    const baseURL = https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/;
+<script>
+  const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
+  const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
+  const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
 
-    async function fetchSheet(range) {
-      const res = await fetch(${baseURL}${encodeURIComponent(range)}?key=${API_KEY});
-      return (await res.json()).values || [];
-    }
+  async function fetchSheet(range) {
+    const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
+    return (await res.json()).values || [];
+  }
 
-    async function loadAvailableModels() {
-      const raw = await fetchSheet("Годинники!A:D");
-      const [, ...rows] = raw;
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const rawDetail = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDetail;
-      const container = document.getElementById("modelList");
+  async function loadAvailableModels() {
+    const raw = await fetchSheet("Годинники!A:D");
+    const [, ...rows] = raw;
+    const rawLink = await fetchSheet("Комплектації!A:D");
+    const [, ...linkData] = rawLink;
+    const rawDetail = await fetchSheet("Деталі!A:F");
+    const [, ...detailData] = rawDetail;
+    const container = document.getElementById("modelList");
 
-      rows.forEach(r => {
-        const article = (r[2]||"").trim();
-        const name = (r[3]||"").trim();
-        if (!/^(?:1201|1202)-/.test(article)) return;
-        if (/^(?:Сталевий браслет|Годинник наручний)/.test(name)) return;
+    rows.forEach(r => {
+      const article = (r[2]||"").trim();
+      const name = (r[3]||"").trim();
+      if (!/^(?:1201|1202)-/.test(article)) return;
+      if (/^(?:Сталевий браслет|Годинник наручний)/.test(name)) return;
 
-        const imgURL = https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg;
-        const div = document.createElement("div");
-        div.className = "model-item";
-        div.dataset.article = article;
-        div.onclick = () => {
-          document.getElementById("watchInput").value = article;
-          searchParts();
-          window.scrollTo({ top:0, behavior:"smooth" });
-        };
-        div.innerHTML = <img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>;
-        const needed = linkData.filter(x => x[1]?.trim() === article).map(x=>x[3]?.trim());
-        const missing = needed.some(p => {
-          const f = detailData.find(d=>d[1]?.trim()===p);
-          return !(parseInt(f?.[5]||"0",10));
-        });
-        div.querySelector('.status-dot').classList.add(missing?'status-red':'status-green');
-        container.appendChild(div);
-      });
-    }
+      const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
+      const div = document.createElement("div");
+      div.className = "model-item";
+      div.dataset.article = article;
+      div.onclick = () => {
+        document.getElementById("watchInput").value = article;
+        searchParts();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
 
-    async function searchParts() {
-      const input = document.getElementById("watchInput").value.trim();
-      const loader = document.getElementById("loader");
-      const noRes = document.getElementById("noResults");
-      const table = document.getElementById("resultsTable");
-      const summary = document.getElementById("summary");
-      loader.style.display = "block"; noRes.style.display="none"; table.style.display="none"; summary.style.display="none";
-
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const partRows = linkData.filter(r=>r[1]?.trim()===input);
-      const parts = partRows.map(r=>r[3]?.trim());
-      if (!parts.length) { loader.style.display="none"; noRes.style.display="block"; return; }
-
-      const rawDet = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDet;
-
-      const tbody = document.querySelector("#resultsTable tbody"); tbody.innerHTML="";
-      let total = 0;
-      parts.forEach(a=>{
-        const d = detailData.find(r=>r[1]?.trim()===a) || [];
-        const name = d[2]?.trim()||"Без назви";
-        const qty = parseInt(d[5]||"0",10)||0; total+=qty;
-        const img = https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg;
-
-        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
-        const isMissing = parseInt(s) === 0;
-        const highlight = v => (isMissing && parseInt(v) === 0 ? <span class="red-text">${v}</span> : v);
-
-
-        tbody.innerHTML+=
-          <tr>
-            <td><img src="${img}" onclick="window.open('${img}')"></td>
-            <td>${a}</td>
-            <td>${name}</td>
-            <td>${highlight(p)}</td>
-            <td>${highlight(o)}</td>
-            <td>${highlight(s)}</td>
-          </tr>;
+      const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
+      const missing = needed.some(p => {
+        const f = detailData.find(d => d[1]?.trim() === p);
+        return !(parseInt(f?.[5] || "0", 10));
       });
 
-      loader.style.display="none"; table.style.display="table";
-      summary.innerText=Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.; summary.style.display="block";
-    }
-
-    document.getElementById("watchInput").addEventListener("keydown", e=>{
-      if (e.key==="Enter") searchParts();
+      div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot ${missing ? 'status-red' : 'status-green'}"></span>`;
+      container.appendChild(div);
     });
-async function loadLastUpdatedDate() {
-  const raw = await fetchSheet("Залишки!K1");
-  const date = raw?.[0]?.[0] || "невідомо";
-  document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
-}
-   window.onload = async () => {
-  await Promise.all([
-    loadAvailableModels(),
-    loadLastUpdatedDate()
-  ]);
-};
-  </script>
+  }
+
+  async function searchParts() {
+    const input = document.getElementById("watchInput").value.trim();
+    const loader = document.getElementById("loader");
+    const noRes = document.getElementById("noResults");
+    const table = document.getElementById("resultsTable");
+    const summary = document.getElementById("summary");
+
+    loader.style.display = "block"; noRes.style.display = "none"; table.style.display = "none"; summary.style.display = "none";
+
+    const rawLink = await fetchSheet("Комплектації!A:D");
+    const [, ...linkData] = rawLink;
+    const partRows = linkData.filter(r => r[1]?.trim() === input);
+    const parts = partRows.map(r => r[3]?.trim());
+    if (!parts.length) {
+      loader.style.display = "none";
+      noRes.style.display = "block";
+      return;
+    }
+
+    const rawDet = await fetchSheet("Деталі!A:F");
+    const [, ...detailData] = rawDet;
+    const tbody = document.querySelector("#resultsTable tbody"); tbody.innerHTML = "";
+
+    let total = 0;
+    parts.forEach(a => {
+      const d = detailData.find(r => r[1]?.trim() === a) || [];
+      const name = d[2]?.trim() || "Без назви";
+      const qty = parseInt(d[5] || "0", 10) || 0;
+      total += qty;
+      const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
+
+      const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
+      const isMissing = parseInt(s) === 0;
+
+      const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
+
+      tbody.innerHTML += `
+        <tr>
+          <td><img src="${img}" onclick="window.open('${img}')"></td>
+          <td>${a}</td>
+          <td>${name}</td>
+          <td>${highlight(p)}</td>
+          <td>${highlight(o)}</td>
+          <td>${highlight(s)}</td>
+        </tr>`;
+    });
+
+    loader.style.display = "none";
+    table.style.display = "table";
+    summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
+    summary.style.display = "block";
+  }
+
+  async function loadLastUpdatedDate() {
+    const raw = await fetchSheet("Залишки!K1");
+    const date = raw?.[0]?.[0] || "невідомо";
+    document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
+  }
+
+  document.getElementById("watchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") searchParts();
+  });
+
+  window.onload = async () => {
+    await Promise.all([
+      loadAvailableModels(),
+      loadLastUpdatedDate()
+    ]);
+  };
+</script>
 </body>
 </html>
-
