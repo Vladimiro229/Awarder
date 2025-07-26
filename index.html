@@ -14,66 +14,100 @@
     }
     h1 {
       text-align: center;
-      margin: 30px 0 10px;
+      margin: 30px 0;
       font-size: 28px;
       font-weight: 600;
     }
-    .search-box {
+    .container {
       display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    .search-box input {
-      width: 300px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    .search-box button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .model-list {
-      max-width: 900px;
+      flex-wrap: wrap;
+      gap: 30px;
+      padding: 0 20px 30px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 10px 20px 40px;
+    }
+    .left {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      flex: 1;
+      min-width: 300px;
+    }
+    .subtitle {
+      font-size: 20px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      text-align: center;
     }
     .model-item {
       display: flex;
       align-items: center;
+      padding: 12px;
+      margin-bottom: 10px;
       background: #fff;
       border: 1px solid #ccc;
       border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
       cursor: pointer;
       transition: 0.2s;
       position: relative;
     }
     .model-item:hover {
+      transform: scale(1.01);
       border-color: #007bff;
     }
     .model-item img {
       height: 50px;
       margin-right: 10px;
     }
-    .active-model {
-      background: #fff6e0;
-      border-color: #f2dab0;
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-left: auto;
+    }
+    .status-green {
+      background: #26c281;
+      box-shadow: 0 0 0 3px #c3f3df inset;
+    }
+    .status-red {
+      background: #ff4d4d;
+      box-shadow: 0 0 0 3px #ffdada inset;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin: 0 auto 20px;
+      max-width: 600px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 17px;
+    }
+    .search-box button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      background-color: #111;
+      color: white;
+      cursor: pointer;
+      font-size: 17px;
     }
     .floating-table {
-      margin-top: 8px;
-      font-size: 14px;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 999;
+      background: white;
       border: 1px solid #ccc;
       border-radius: 10px;
-      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      margin-top: 5px;
+      font-size: 13px;
+      min-width: 600px;
       overflow: hidden;
     }
     .floating-table table {
@@ -86,40 +120,55 @@
       text-align: center;
     }
     .floating-table img {
-      height: 40px;
-      object-fit: contain;
-      cursor: pointer;
+      max-height: 40px;
+      transition: transform 0.2s ease;
+      cursor: zoom-in;
     }
-    .close-btn {
-      float: right;
-      background: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 14px;
-      cursor: pointer;
-      margin: 5px;
+    .floating-table img:hover {
+      transform: scale(2);
+      z-index: 1000;
+    }
+    .red-text {
+      color: #e63946;
+      font-weight: bold;
+    }
+    .active-model {
+      background: #fff6e0 !important;
+      border-color: #f2dab0 !important;
+    }
+    #noResults {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+      margin-top: 10px;
+    }
+    @media (max-width: 768px) {
+      .container { flex-direction: column; }
+      .search-box { flex-direction: column; }
+      .search-box button { width: 100%; }
+      .floating-table { min-width: unset; max-width: 100%; }
     }
   </style>
 </head>
 <body>
   <h1>Наявність деталей для індивідуального годинника</h1>
   <div class="search-box">
-    <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-    <button onclick="searchParts()">Пошук</button>
+    <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252">
+    <button onclick="searchPartsFromInput()">Пошук</button>
   </div>
-  <div class="model-list" id="modelList"></div>
-  <div id="manualResults" class="model-list"></div>
-
+  <div id="noResults"></div>
+  <div class="container">
+    <div class="left">
+      <div class="subtitle">Доступні моделі годинників</div>
+      <div id="modelList"></div>
+    </div>
+  </div>
   <script>
     const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
     const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
     const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
-
     let allModels = [];
-    let currentModelIndex = -1;
+    let activeFloating;
 
     async function fetchSheet(range) {
       const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
@@ -127,141 +176,89 @@
       return data.values || [];
     }
 
-    async function loadModels() {
+    async function loadAvailableModels() {
       const raw = await fetchSheet("Годинники!A:D");
       const [, ...rows] = raw;
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const rawDetail = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDetail;
       const container = document.getElementById("modelList");
-      rows.forEach((r, i) => {
-        const article = r[2]?.trim();
-        const name = r[3]?.trim();
+
+      rows.forEach(r => {
+        const article = (r[2] || '').trim();
+        const name = (r[3] || '').trim();
         if (!/^(1201|1202)-/.test(article)) return;
+        if (/^(Сталевий браслет|Годинник наручний)/.test(name)) return;
+
+        const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
         const div = document.createElement("div");
         div.className = "model-item";
-        div.tabIndex = 0;
-        div.dataset.index = i;
         div.dataset.article = article;
-        div.innerHTML = `<img src="https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg"><div><strong>${article}</strong> — ${name}</div>`;
-        div.addEventListener("click", () => showModelDetails(article, div));
+        div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
+
+        const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
+        let statusClass = 'status-green';
+        if (needed.length === 0 || needed.some(p => {
+          const f = detailData.find(d => d[1]?.trim() === p);
+          return !(parseInt(f?.[5] || "0", 10));
+        })) {
+          statusClass = 'status-red';
+        }
+
+        div.querySelector('.status-dot').classList.add(statusClass);
+        div.onclick = () => togglePartsTable(div, article);
         container.appendChild(div);
         allModels.push(div);
       });
     }
 
-    async function showModelDetails(article, targetEl) {
-      if (targetEl.classList.contains("expanded")) return;
-      targetEl.classList.add("active-model", "expanded");
-
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const partRows = linkData.filter(r => r[1]?.trim() === article);
+    async function togglePartsTable(el, article) {
+      if (el.classList.contains("active-model")) {
+        el.classList.remove("active-model");
+        const old = el.querySelector(".floating-table");
+        if (old) old.remove();
+        activeFloating = null;
+        return;
+      }
+      allModels.forEach(m => m.classList.remove("active-model"));
+      document.querySelectorAll(".floating-table").forEach(t => t.remove());
+      el.classList.add("active-model");
+      const partRows = (await fetchSheet("Комплектації!A:D")).slice(1).filter(r => r[1]?.trim() === article);
       const parts = partRows.map(r => r[3]?.trim());
-
-      const rawDet = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDet;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "floating-table";
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "close-btn";
-      closeBtn.innerText = "×";
-      closeBtn.onclick = () => {
-        wrapper.remove();
-        targetEl.classList.remove("active-model", "expanded");
-      };
-
-      const table = document.createElement("table");
-      table.innerHTML = `<thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прих.</th><th>Розх.</th><th>Зал.</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector("tbody");
-
+      const detailData = (await fetchSheet("Деталі!A:F")).slice(1);
+      const tbl = document.createElement("div");
+      tbl.className = "floating-table";
+      let rows = "<table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прих.</th><th>Розх.</th><th>Зал.</th></tr></thead><tbody>";
       parts.forEach(a => {
         const d = detailData.find(r => r[1]?.trim() === a) || [];
+        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
         const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
-        const row = `
-          <tr>
-            <td><img src="${img}" onclick="window.open('${img}')"></td>
-            <td>${a}</td>
-            <td>${d[2] || ''}</td>
-            <td>${d[3] || '0'}</td>
-            <td>${d[4] || '0'}</td>
-            <td>${d[5] || '0'}</td>
-          </tr>
-        `;
-        tbody.innerHTML += row;
+        const highlight = v => (parseInt(s) === 0 && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v);
+        rows += `<tr><td><img src='${img}'></td><td>${a}</td><td>${d[2] || ""}</td><td>${highlight(p)}</td><td>${highlight(o)}</td><td>${highlight(s)}</td></tr>`;
       });
-
-      wrapper.appendChild(closeBtn);
-      wrapper.appendChild(table);
-      targetEl.insertAdjacentElement("afterend", wrapper);
+      rows += "</tbody></table>";
+      tbl.innerHTML = rows;
+      el.appendChild(tbl);
+      activeFloating = tbl;
     }
 
-    async function searchParts() {
-      const input = document.getElementById("watchInput").value.trim();
-      if (!input) return;
-      const container = document.getElementById("manualResults");
-      container.innerHTML = "";
-
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const partRows = linkData.filter(r => r[1]?.trim() === input);
-      const parts = partRows.map(r => r[3]?.trim());
-
-      const rawDet = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDet;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "floating-table";
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "close-btn";
-      closeBtn.innerText = "×";
-      closeBtn.onclick = () => wrapper.remove();
-
-      const table = document.createElement("table");
-      table.innerHTML = `<thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прих.</th><th>Розх.</th><th>Зал.</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector("tbody");
-
-      parts.forEach(a => {
-        const d = detailData.find(r => r[1]?.trim() === a) || [];
-        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
-        const row = `
-          <tr>
-            <td><img src="${img}" onclick="window.open('${img}')"></td>
-            <td>${a}</td>
-            <td>${d[2] || ''}</td>
-            <td>${d[3] || '0'}</td>
-            <td>${d[4] || '0'}</td>
-            <td>${d[5] || '0'}</td>
-          </tr>
-        `;
-        tbody.innerHTML += row;
+    async function searchPartsFromInput() {
+      const val = document.getElementById("watchInput").value.trim();
+      if (!val) return;
+      allModels.forEach(m => {
+        if (m.dataset.article === val) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
-
-      wrapper.appendChild(closeBtn);
-      wrapper.appendChild(table);
-      container.appendChild(wrapper);
+      togglePartsTable(allModels.find(m => m.dataset.article === val), val);
     }
 
     document.getElementById("watchInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") searchParts();
+      if (e.key === "Enter") searchPartsFromInput();
     });
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowDown") {
-        if (currentModelIndex < allModels.length - 1) {
-          currentModelIndex++;
-          allModels[currentModelIndex].focus();
-        }
-      } else if (e.key === "ArrowUp") {
-        if (currentModelIndex > 0) {
-          currentModelIndex--;
-          allModels[currentModelIndex].focus();
-        }
-      } else if (e.key === "Enter" && currentModelIndex !== -1) {
-        const model = allModels[currentModelIndex];
-        model.click();
-      }
-    });
-
-    window.onload = loadModels;
+    window.onload = () => {
+      loadAvailableModels();
+    };
   </script>
 </body>
 </html>
