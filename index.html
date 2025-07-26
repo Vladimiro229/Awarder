@@ -38,9 +38,6 @@
     .right {
       flex: 1;
       min-width: 300px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
     .subtitle {
       font-size: 20px;
@@ -104,13 +101,28 @@
     }
     .floating-box {
       position: absolute;
-      width: 45%;
+      width: 48%;
+      right: 20px;
       background: #fff;
       border: 1px solid #ccc;
       border-radius: 12px;
-      padding: 15px;
+      padding: 15px 20px 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       z-index: 999;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .floating-box .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #888;
+      cursor: pointer;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .floating-box table {
       width: 100%;
@@ -138,6 +150,18 @@
       font-size: 14px;
       color: #333;
     }
+    .active-model {
+      background: #fff6e0 !important;
+      border-color: #f2dab0 !important;
+    }
+    @media (max-width: 768px) {
+      .container { flex-direction: column; }
+      .floating-box {
+        position: static;
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -164,6 +188,8 @@
     const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
     const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
     const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
+    let allModels = [];
+    let currentModelIndex = -1;
 
     async function fetchSheet(range) {
       const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
@@ -190,7 +216,7 @@
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
-        div.onclick = () => showFloatingDetails(article, div.offsetTop);
+        div.onclick = () => selectModel(index);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
 
         const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
@@ -204,9 +230,21 @@
         div.querySelector('.status-dot').classList.add(statusClass);
         container.appendChild(div);
       });
+
+      allModels = [...document.querySelectorAll(".model-item")];
     }
 
-    async function searchParts(isSearch = false) {
+    function selectModel(index) {
+      if (currentModelIndex >= 0) allModels[currentModelIndex].classList.remove("active-model");
+      currentModelIndex = index;
+      const model = allModels[currentModelIndex];
+      model.classList.add("active-model");
+      const article = model.dataset.article;
+      document.getElementById("watchInput").value = article;
+      showFloatingDetails(article, model.offsetTop);
+    }
+
+    async function searchParts(isSearch = false, offsetTop = 0) {
       const input = document.getElementById("watchInput").value.trim();
       const rawLink = await fetchSheet("Комплектації!A:D");
       const [, ...linkData] = rawLink;
@@ -242,6 +280,7 @@
       });
 
       const table = `
+        <div class='close-btn' onclick="document.getElementById('floatingDetails').style.display='none'">&times;</div>
         <table>
           <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
           <tbody>${html}</tbody>
@@ -250,18 +289,17 @@
       `;
 
       if (isSearch) {
-        document.getElementById("searchResults").innerHTML = table;
+        document.getElementById("searchResults").innerHTML = `<div class='floating-box' style='position:static; margin-top:10px;'>${table}</div>`;
         document.getElementById("floatingDetails").style.display = "none";
       } else {
         const floating = document.getElementById("floatingDetails");
         floating.innerHTML = table;
-        floating.style.top = `${arguments[1]}px`;
+        floating.style.top = `${offsetTop}px`;
         floating.style.display = "block";
       }
     }
 
     function showFloatingDetails(article, offsetTop) {
-      document.getElementById("watchInput").value = article;
       searchParts(false, offsetTop);
     }
 
@@ -277,6 +315,12 @@
         loadLastUpdatedDate()
       ]);
     };
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.getElementById("floatingDetails").style.display = "none";
+      }
+    });
   </script>
 </body>
 </html>
