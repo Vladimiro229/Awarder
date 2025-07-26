@@ -101,8 +101,8 @@
     }
     .floating-box {
       position: absolute;
-      width: 48%;
-      right: 20px;
+      width: 600px;
+      max-width: 90vw;
       background: #fff;
       border: 1px solid #ccc;
       border-radius: 12px;
@@ -206,7 +206,7 @@
       const [, ...detailData] = rawDetail;
       const container = document.getElementById("modelList");
 
-      rows.forEach((r, index) => {
+      rows.forEach((r) => {
         const article = (r[2] || "").trim();
         const name = (r[3] || "").trim();
         if (!/^(1201|1202)-/.test(article)) return;
@@ -216,7 +216,7 @@
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
-        div.onclick = () => selectModel(index);
+        div.onclick = () => selectModelByArticle(article);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
 
         const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
@@ -234,14 +234,16 @@
       allModels = [...document.querySelectorAll(".model-item")];
     }
 
-    function selectModel(index) {
-      if (currentModelIndex >= 0) allModels[currentModelIndex].classList.remove("active-model");
-      currentModelIndex = index;
-      const model = allModels[currentModelIndex];
-      model.classList.add("active-model");
-      const article = model.dataset.article;
-      document.getElementById("watchInput").value = article;
-      showFloatingDetails(article, model.offsetTop);
+    function selectModelByArticle(article) {
+      allModels.forEach((el, idx) => {
+        if (el.dataset.article === article) {
+          if (currentModelIndex >= 0) allModels[currentModelIndex].classList.remove("active-model");
+          currentModelIndex = idx;
+          el.classList.add("active-model");
+          document.getElementById("watchInput").value = article;
+          showFloatingDetails(article, el.offsetTop);
+        }
+      });
     }
 
     async function searchParts(isSearch = false, offsetTop = 0) {
@@ -295,6 +297,7 @@
         const floating = document.getElementById("floatingDetails");
         floating.innerHTML = table;
         floating.style.top = `${offsetTop}px`;
+        floating.style.right = `20px`;
         floating.style.display = "block";
       }
     }
