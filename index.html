@@ -25,8 +25,9 @@
       padding: 0 20px 30px;
       max-width: 1200px;
       margin: 0 auto;
+      position: relative;
     }
-    .left, .right {
+    .left {
       background: #fff;
       padding: 25px;
       border-radius: 12px;
@@ -35,8 +36,11 @@
       min-width: 300px;
     }
     .right {
-      background: #fafafa;
-      border-left: 2px solid #ddd;
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .subtitle {
       font-size: 20px;
@@ -80,7 +84,7 @@
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .search-box input {
       flex: 1;
@@ -98,57 +102,41 @@
       cursor: pointer;
       font-size: 17px;
     }
-    #resultsTable {
+    .floating-box {
+      position: absolute;
+      width: 45%;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 999;
+    }
+    .floating-box table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      display: none;
     }
-    #resultsTable th, #resultsTable td {
+    .floating-box th, .floating-box td {
       padding: 8px;
       border: 1px solid #eee;
       text-align: center;
       font-size: 15px;
     }
-    #resultsTable img {
+    .floating-box img {
       max-height: 60px;
       object-fit: contain;
       cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    #resultsTable img:hover {
-      transform: scale(2);
-      z-index: 999;
     }
     .red-text {
       color: #e63946;
       font-weight: bold;
     }
-    #loader, #noResults {
-      text-align: center;
-      margin-top: 10px;
-      font-style: italic;
-      color: #555;
-      display: none;
-    }
     .total-info {
-      margin-top: 15px;
+      margin-top: 10px;
       font-weight: 500;
       text-align: right;
-      font-size: 15px;
+      font-size: 14px;
       color: #333;
-      display: none;
-    }
-   .active-model {
-  background: #fff6e0 !important;
- border-color: #f2dab0 !important;
-}
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .search-box { flex-direction: column; }
-      .search-box button { width: 100%; }
     }
   </style>
 </head>
@@ -165,26 +153,17 @@
     <div class="right">
       <div class="search-box">
         <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-        <button onclick="searchParts()">Пошук</button>
+        <button onclick="searchParts(true)">Пошук</button>
       </div>
-      <div id="loader">Завантаження...</div>
-      <div id="noResults">Нічого не знайдено.</div>
-      <div class="search-results">
-        <table id="resultsTable">
-          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="total-info" id="summary"></div>
-      </div>
+      <div id="searchResults"></div>
     </div>
   </div>
+  <div id="floatingDetails" class="floating-box" style="display:none"></div>
 
   <script>
     const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
     const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
     const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
-    let allModels = [];
-    let currentModelIndex = -1;
 
     async function fetchSheet(range) {
       const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
@@ -201,7 +180,7 @@
       const [, ...detailData] = rawDetail;
       const container = document.getElementById("modelList");
 
-      rows.forEach(r => {
+      rows.forEach((r, index) => {
         const article = (r[2] || "").trim();
         const name = (r[3] || "").trim();
         if (!/^(1201|1202)-/.test(article)) return;
@@ -211,91 +190,32 @@
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
-        div.onclick = () => selectModelByArticle(article);
+        div.onclick = () => showFloatingDetails(article, div.offsetTop);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
 
         const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
-
         let statusClass = 'status-green';
-        if (needed.length === 0) {
+        if (needed.length === 0 || needed.some(p => {
+          const f = detailData.find(d => d[1]?.trim() === p);
+          return !(parseInt(f?.[5] || "0", 10));
+        })) {
           statusClass = 'status-red';
-        } else {
-          const missing = needed.some(p => {
-            const f = detailData.find(d => d[1]?.trim() === p);
-            return !(parseInt(f?.[5] || "0", 10));
-          });
-          if (missing) statusClass = 'status-red';
         }
-
         div.querySelector('.status-dot').classList.add(statusClass);
         container.appendChild(div);
       });
-
-      allModels = [...document.querySelectorAll(".model-item")];
     }
 
-    function selectModelByArticle(article) {
-      const index = allModels.findIndex(m => m.dataset.article === article);
-      if (index !== -1) {
-        setActiveModel(index);
-        document.getElementById("watchInput").value = article;
-        searchParts();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-
-    function setActiveModel(index) {
-      if (currentModelIndex >= 0) {
-        allModels[currentModelIndex].classList.remove("active-model");
-      }
-      currentModelIndex = index;
-      allModels[currentModelIndex].classList.add("active-model");
-      allModels[currentModelIndex].scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowDown") {
-        if (currentModelIndex < allModels.length - 1) {
-          setActiveModel(currentModelIndex + 1);
-          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
-          searchParts();
-        }
-      }
-      if (e.key === "ArrowUp") {
-        if (currentModelIndex > 0) {
-          setActiveModel(currentModelIndex - 1);
-          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
-          searchParts();
-        }
-      }
-    });
-
-    async function searchParts() {
+    async function searchParts(isSearch = false) {
       const input = document.getElementById("watchInput").value.trim();
-      const loader = document.getElementById("loader");
-      const noRes = document.getElementById("noResults");
-      const table = document.getElementById("resultsTable");
-      const summary = document.getElementById("summary");
-      loader.style.display = "block";
-      noRes.style.display = "none";
-      table.style.display = "none";
-      summary.style.display = "none";
-
       const rawLink = await fetchSheet("Комплектації!A:D");
       const [, ...linkData] = rawLink;
       const partRows = linkData.filter(r => r[1]?.trim() === input);
       const parts = partRows.map(r => r[3]?.trim());
-      if (!parts.length) {
-        loader.style.display = "none";
-        noRes.style.display = "block";
-        return;
-      }
-
       const rawDet = await fetchSheet("Деталі!A:F");
       const [, ...detailData] = rawDet;
 
-      const tbody = document.querySelector("#resultsTable tbody");
-      tbody.innerHTML = "";
+      let html = "";
       let total = 0;
 
       parts.forEach(a => {
@@ -307,9 +227,9 @@
 
         const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
         const isMissing = parseInt(s) === 0;
-        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
+        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v);
 
-        tbody.innerHTML += `
+        html += `
           <tr>
             <td><img src="${img}" onclick="window.open('${img}')"></td>
             <td>${a}</td>
@@ -321,10 +241,28 @@
         `;
       });
 
-      loader.style.display = "none";
-      table.style.display = "table";
-      summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
-      summary.style.display = "block";
+      const table = `
+        <table>
+          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+          <tbody>${html}</tbody>
+        </table>
+        <div class="total-info">Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.</div>
+      `;
+
+      if (isSearch) {
+        document.getElementById("searchResults").innerHTML = table;
+        document.getElementById("floatingDetails").style.display = "none";
+      } else {
+        const floating = document.getElementById("floatingDetails");
+        floating.innerHTML = table;
+        floating.style.top = `${arguments[1]}px`;
+        floating.style.display = "block";
+      }
+    }
+
+    function showFloatingDetails(article, offsetTop) {
+      document.getElementById("watchInput").value = article;
+      searchParts(false, offsetTop);
     }
 
     async function loadLastUpdatedDate() {
@@ -332,10 +270,6 @@
       const date = raw?.[0]?.[0] || "невідомо";
       document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
     }
-
-    document.getElementById("watchInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") searchParts();
-    });
 
     window.onload = async () => {
       await Promise.all([
