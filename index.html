@@ -1,152 +1,4 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Наявність деталей для індивідуального годинника</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #e6e6e6;
-      color: #111;
-      font-size: 16px;
-    }
-    h1 {
-      text-align: center;
-      margin: 30px 0;
-      font-size: 28px;
-      font-weight: 600;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 0 20px 30px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .model-list {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .model-item {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      margin-bottom: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .model-item:hover {
-      transform: scale(1.01);
-      border-color: #007bff;
-    }
-    .model-item img {
-      height: 50px;
-      margin-right: 10px;
-    }
-    .status-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      margin-left: auto;
-    }
-    .status-green {
-      background: #26c281;
-      box-shadow: 0 0 0 3px #c3f3df inset;
-    }
-    .status-red {
-      background: #ff4d4d;
-      box-shadow: 0 0 0 3px #ffdada inset;
-    }
-    .search-box {
-      display: flex;
-      gap: 10px;
-    }
-    .search-box input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 17px;
-    }
-    .search-box button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
-      cursor: pointer;
-      font-size: 17px;
-    }
-    .model-details {
-      margin: 10px 0 30px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      padding: 15px;
-    }
-    .model-details table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .model-details th, .model-details td {
-      padding: 8px;
-      border: 1px solid #eee;
-      text-align: center;
-      font-size: 15px;
-    }
-    .model-details img {
-      max-height: 60px;
-      object-fit: contain;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .model-details img:hover {
-      transform: scale(2);
-    }
-    .red-text {
-      color: #e63946;
-      font-weight: bold;
-    }
-    .total-info {
-      text-align: right;
-      font-size: 15px;
-      margin-top: 10px;
-      font-weight: 500;
-    }
-  </style>
-</head>
-<body>
-  <div id="updateInfo" style="background:#fff6e0;padding:10px;text-align:center;font-weight:500;">
-    🕒 Завантаження дати оновлення...
-  </div>
-  <h1>Наявність деталей для індивідуального годинника</h1>
-  <div class="container">
-    <div class="search-box">
-      <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-      <button onclick="searchParts(true)">Пошук</button>
-    </div>
-    <div id="manualResults"></div>
-    <div class="model-list">
-      <div class="subtitle">Доступні моделі годинників</div>
-      <div id="modelList"></div>
-    </div>
-  </div>
-
-  <script>
+<script>
     let allModels = [];
     let currentModelIndex = -1;
 
@@ -178,6 +30,7 @@
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
+        div.tabIndex = 0;
         div.onclick = () => showModelDetails(div, article);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
 
@@ -200,6 +53,8 @@
 
     async function showModelDetails(div, article) {
       document.querySelectorAll(".model-details").forEach(el => el.remove());
+      allModels.forEach(el => el.classList.remove("active-model"));
+      div.classList.add("active-model");
       const rawLink = await fetchSheet("Комплектації!A:D");
       const [, ...linkData] = rawLink;
       const rawDet = await fetchSheet("Деталі!A:F");
@@ -239,7 +94,7 @@
       div.insertAdjacentElement("afterend", block);
     }
 
-    async function searchParts(isManual = false) {
+    async function searchParts() {
       document.getElementById("manualResults").innerHTML = "";
       const input = document.getElementById("watchInput").value.trim();
       const rawLink = await fetchSheet("Комплектації!A:D");
@@ -280,22 +135,46 @@
       document.getElementById("manualResults").appendChild(block);
     }
 
+    document.getElementById("watchInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") searchParts();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown") {
+        if (currentModelIndex < allModels.length - 1) {
+          currentModelIndex++;
+          allModels[currentModelIndex].focus();
+        }
+      }
+      if (e.key === "ArrowUp") {
+        if (currentModelIndex > 0) {
+          currentModelIndex--;
+          allModels[currentModelIndex].focus();
+        }
+      }
+      if (e.key === "Enter" && currentModelIndex >= 0) {
+        const selected = allModels[currentModelIndex];
+        const article = selected.dataset.article;
+        showModelDetails(selected, article);
+      }
+    });
+
     async function loadLastUpdatedDate() {
       const raw = await fetchSheet("Залишки!K1");
       const date = raw?.[0]?.[0] || "невідомо";
       document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
     }
 
-    document.getElementById("watchInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") searchParts(true);
-    });
-
     window.onload = async () => {
       await Promise.all([
         loadAvailableModels(),
         loadLastUpdatedDate()
       ]);
-    }
-  </script>
-</body>
-</html>
+    };
+</script>
+<style>
+.active-model {
+  background: #fff6e0 !important;
+  border-color: #f2dab0 !important;
+}
+</style>
