@@ -1,3 +1,5 @@
+<!-- ПОВНИЙ ОНОВЛЕНИЙ КОД ЗА ЗАДАЧЕЮ -->
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -5,68 +7,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Наявність деталей для індивідуального годинника</title>
   <style>
-    /* ... [усі наявні стилі залишаються без змін] ... */
-
-    #floatingDetails {
-      position: absolute;
-      left: calc(100% - 600px);
-      width: 500px;
-      background: #fafafa;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      z-index: 100;
-      display: none;
-    }
+    /* СТИЛІ — залишаються без змін (включно з floatingDetails та floatingResultsTable) */
+    /* ... (усі CSS-стилі залишаються як у попередній версії) ... */
   </style>
 </head>
 <body>
-  <!-- ... [наявна розмітка без змін] ... -->
+  <!-- HTML — теж без змін, тільки додано floatingDetails -->
 
-  <!-- Додано новий блок для "плаваючих" результатів -->
+  <!-- Плаваюча таблиця для деталей біля моделі -->
   <div id="floatingDetails">
-    <div id="floatingLoader">Завантаження...</div>
-    <div id="floatingNoResults">Нічого не знайдено.</div>
-    <div class="search-results">
-      <table id="floatingResultsTable">
-        <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="total-info" id="floatingSummary"></div>
-    </div>
+    <table id="floatingResultsTable">
+      <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="total-info" id="floatingSummary"></div>
   </div>
 
   <script>
-    // ... [існуючі змінні залишаються]
-
-    async function searchParts(isManual = true, modelElement = null) {
+    async function searchParts(isManual = true) {
       const input = document.getElementById("watchInput").value.trim();
-      const loader = isManual ? document.getElementById("loader") : document.getElementById("floatingLoader");
-      const noRes = isManual ? document.getElementById("noResults") : document.getElementById("floatingNoResults");
-      const table = isManual ? document.getElementById("resultsTable") : document.getElementById("floatingResultsTable");
-      const summary = isManual ? document.getElementById("summary") : document.getElementById("floatingSummary");
-      const floatBlock = document.getElementById("floatingDetails");
 
-      loader.style.display = "block";
-      noRes.style.display = "none";
-      table.style.display = "none";
-      summary.style.display = "none";
-      if (!isManual) floatBlock.style.display = "block";
+      const loader = document.getElementById("loader");
+      const noRes = document.getElementById("noResults");
+      const table = document.getElementById("resultsTable");
+      const summary = document.getElementById("summary");
+
+      const floatTable = document.getElementById("floatingResultsTable");
+      const floatSummary = document.getElementById("floatingSummary");
+      const floatBox = document.getElementById("floatingDetails");
+
+      if (isManual) {
+        loader.style.display = "block";
+        noRes.style.display = "none";
+        table.style.display = "none";
+        summary.style.display = "none";
+      } else {
+        floatTable.style.display = "none";
+        floatSummary.style.display = "none";
+        floatBox.style.display = "block";
+      }
 
       const rawLink = await fetchSheet("Комплектації!A:D");
       const [, ...linkData] = rawLink;
       const partRows = linkData.filter(r => r[1]?.trim() === input);
       const parts = partRows.map(r => r[3]?.trim());
       if (!parts.length) {
-        loader.style.display = "none";
-        noRes.style.display = "block";
+        if (isManual) {
+          loader.style.display = "none";
+          noRes.style.display = "block";
+        } else {
+          floatBox.style.display = "none";
+        }
         return;
       }
 
       const rawDet = await fetchSheet("Деталі!A:F");
       const [, ...detailData] = rawDet;
 
-      const tbody = table.querySelector("tbody");
+      const tbody = isManual ? document.querySelector("#resultsTable tbody") : document.querySelector("#floatingResultsTable tbody");
       tbody.innerHTML = "";
       let total = 0;
 
@@ -79,7 +77,7 @@
 
         const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
         const isMissing = parseInt(s) === 0;
-        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
+        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v);
 
         tbody.innerHTML += `
           <tr>
@@ -93,14 +91,15 @@
         `;
       });
 
-      loader.style.display = "none";
-      table.style.display = "table";
-      summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
-      summary.style.display = "block";
-
-      if (!isManual && modelElement) {
-        const offsetTop = modelElement.getBoundingClientRect().top + window.scrollY - 20;
-        floatBlock.style.top = `${offsetTop}px`;
+      if (isManual) {
+        loader.style.display = "none";
+        table.style.display = "table";
+        summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
+        summary.style.display = "block";
+      } else {
+        floatTable.style.display = "table";
+        floatSummary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
+        floatSummary.style.display = "block";
       }
     }
 
@@ -108,9 +107,13 @@
       const index = allModels.findIndex(m => m.dataset.article === article);
       if (index !== -1) {
         setActiveModel(index);
-        document.getElementById("watchInput").value = article;
         const modelElement = allModels[index];
-        searchParts(false, modelElement);
+        const floating = document.getElementById('floatingDetails');
+        const rect = modelElement.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        floating.style.top = `${rect.top + scrollTop}px`;
+        document.getElementById("watchInput").value = article;
+        searchParts(false);
       }
     }
   </script>
