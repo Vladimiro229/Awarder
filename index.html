@@ -8,257 +8,238 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #e6e6e6;
+      background-color: #e6e6e6;
       color: #111;
-      font-size: 16px;
     }
     h1 {
       text-align: center;
-      margin: 30px 0;
-      font-size: 28px;
+      margin: 20px 0 10px;
+      font-size: 26px;
       font-weight: 600;
     }
-    .container {
+    #search-bar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      padding: 0 20px 30px;
-      max-width: 1200px;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    #searchInput {
+      padding: 8px 12px;
+      font-size: 16px;
+      width: 240px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #searchButton {
+      padding: 8px 18px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #111;
+      color: #fff;
+      cursor: pointer;
+    }
+    .models-container {
+      max-width: 640px;
       margin: 0 auto;
-    }
-    .left {
       background: #fff;
-      padding: 25px;
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      padding: 20px;
     }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .model-item {
+    .model-entry {
       display: flex;
       align-items: center;
-      padding: 12px;
-      margin-bottom: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
+      justify-content: space-between;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
       border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
-      position: relative;
+      background: #fff;
+      transition: background 0.2s, border 0.2s;
     }
-    .model-item:hover {
-      transform: scale(1.01);
-      border-color: #007bff;
+    .model-entry:hover {
+      background: #f0f0f0;
     }
-    .model-item img {
-      height: 50px;
-      margin-right: 10px;
+    .model-entry.active {
+      background-color: #fff7db;
+      border: 1px solid #f9cb40;
+    }
+    .model-code {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .model-title {
+      font-size: 13px;
+      margin-left: 8px;
+      color: #333;
     }
     .status-dot {
-      width: 14px;
-      height: 14px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       margin-left: auto;
     }
-    .status-green {
-      background: #26c281;
-      box-shadow: 0 0 0 3px #c3f3df inset;
-    }
-    .status-red {
-      background: #ff4d4d;
-      box-shadow: 0 0 0 3px #ffdada inset;
-    }
-    .search-box {
-      display: flex;
-      gap: 10px;
-      margin: 0 auto 20px;
-      max-width: 600px;
-    }
-    .search-box input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 17px;
-    }
-    .search-box button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
-      cursor: pointer;
-      font-size: 17px;
-    }
-    .floating-table {
+    .green { background: #2ecc71; }
+    .red { background: #e74c3c; }
+
+    .parts-popup {
       position: absolute;
-      top: 100%;
-      left: 0;
-      z-index: 999;
-      background: white;
-      border: 1px solid #ccc;
+      left: 360px;
+      width: max-content;
+      background: #fff;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-      margin-top: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 10px;
       font-size: 13px;
-      min-width: 600px;
-      overflow: hidden;
+      z-index: 100;
+      animation: fadeIn 0.2s ease-in-out;
     }
-    .floating-table table {
-      width: 100%;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .parts-popup table {
       border-collapse: collapse;
+      width: 100%;
+      margin-top: 8px;
     }
-    .floating-table th, .floating-table td {
-      padding: 6px 8px;
-      border: 1px solid #eee;
+    .parts-popup th, .parts-popup td {
+      border: 1px solid #ddd;
+      padding: 4px 6px;
       text-align: center;
     }
-    .floating-table img {
-      max-height: 40px;
-      transition: transform 0.2s ease;
-      cursor: zoom-in;
+    .parts-popup th {
+      background: #f8f8f8;
+      font-weight: 600;
     }
-    .floating-table img:hover {
+    .part-img {
+      height: 40px;
+      transition: transform 0.2s;
+    }
+    .part-img:hover {
       transform: scale(2);
-      z-index: 1000;
     }
-    .red-text {
-      color: #e63946;
+    .zero-stock {
+      background: #ffe5e5;
+      color: #a00;
       font-weight: bold;
-    }
-    .active-model {
-      background: #fff6e0 !important;
-      border-color: #f2dab0 !important;
-    }
-    #noResults {
-      text-align: center;
-      font-style: italic;
-      color: #555;
-      margin-top: 10px;
-    }
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .search-box { flex-direction: column; }
-      .search-box button { width: 100%; }
-      .floating-table { min-width: unset; max-width: 100%; }
     }
   </style>
 </head>
 <body>
   <h1>Наявність деталей для індивідуального годинника</h1>
-  <div class="search-box">
-    <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252">
-    <button onclick="searchPartsFromInput()">Пошук</button>
+  <div id="search-bar">
+    <input type="text" id="searchInput" placeholder="Введіть артикул...">
+    <button id="searchButton">Пошук</button>
   </div>
-  <div id="noResults"></div>
-  <div class="container">
-    <div class="left">
-      <div class="subtitle">Доступні моделі годинників</div>
-      <div id="modelList"></div>
-    </div>
+  <div class="models-container" id="modelsContainer">
+    <h3 style="text-align:center; margin-bottom:10px">Доступні моделі годинників</h3>
+    <div id="modelsList"></div>
   </div>
   <script>
-    const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
-    const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
-    const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
-    let allModels = [];
-    let activeFloating;
+    let activePopup = null;
+    let activeModel = null;
 
-    async function fetchSheet(range) {
-      const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
-      const data = await res.json();
-      return data.values || [];
-    }
+    const filteredModels = models.filter(m => !m.name.startsWith("Годинник наручний") && !m.name.startsWith("Сталевий браслет"));
 
-    async function loadAvailableModels() {
-      const raw = await fetchSheet("Годинники!A:D");
-      const [, ...rows] = raw;
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const rawDetail = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDetail;
-      const container = document.getElementById("modelList");
-
-      rows.forEach(r => {
-        const article = (r[2] || '').trim();
-        const name = (r[3] || '').trim();
-        if (!/^(1201|1202)-/.test(article)) return;
-        if (/^(Сталевий браслет|Годинник наручний)/.test(name)) return;
-
-        const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
-        const div = document.createElement("div");
-        div.className = "model-item";
-        div.dataset.article = article;
-        div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
-
-        const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
-        let statusClass = 'status-green';
-        if (needed.length === 0 || needed.some(p => {
-          const f = detailData.find(d => d[1]?.trim() === p);
-          return !(parseInt(f?.[5] || "0", 10));
-        })) {
-          statusClass = 'status-red';
-        }
-
-        div.querySelector('.status-dot').classList.add(statusClass);
-        div.onclick = () => togglePartsTable(div, article);
+    function renderModels() {
+      const container = document.getElementById('modelsList');
+      container.innerHTML = '';
+      filteredModels.forEach(model => {
+        const div = document.createElement('div');
+        div.className = 'model-entry';
+        div.dataset.code = model.code;
+        div.innerHTML = `
+          <div>
+            <span class="model-code">${model.code}</span>
+            <span class="model-title"> — ${model.name}</span>
+          </div>
+          <div class="status-dot ${model.hasAllParts ? 'green' : 'red'}"></div>
+        `;
+        div.addEventListener('click', (e) => togglePartsTable(e, model.code, div));
         container.appendChild(div);
-        allModels.push(div);
       });
     }
 
-    async function togglePartsTable(el, article) {
-      if (el.classList.contains("active-model")) {
-        el.classList.remove("active-model");
-        const old = el.querySelector(".floating-table");
-        if (old) old.remove();
-        activeFloating = null;
+    function togglePartsTable(e, code, div) {
+      if (activePopup) activePopup.remove();
+      if (activeModel === div) {
+        activeModel.classList.remove('active');
+        activeModel = null;
         return;
       }
-      allModels.forEach(m => m.classList.remove("active-model"));
-      document.querySelectorAll(".floating-table").forEach(t => t.remove());
-      el.classList.add("active-model");
-      const partRows = (await fetchSheet("Комплектації!A:D")).slice(1).filter(r => r[1]?.trim() === article);
-      const parts = partRows.map(r => r[3]?.trim());
-      const detailData = (await fetchSheet("Деталі!A:F")).slice(1);
-      const tbl = document.createElement("div");
-      tbl.className = "floating-table";
-      let rows = "<table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прих.</th><th>Розх.</th><th>Зал.</th></tr></thead><tbody>";
-      parts.forEach(a => {
-        const d = detailData.find(r => r[1]?.trim() === a) || [];
-        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
-        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
-        const highlight = v => (parseInt(s) === 0 && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v);
-        rows += `<tr><td><img src='${img}'></td><td>${a}</td><td>${d[2] || ""}</td><td>${highlight(p)}</td><td>${highlight(o)}</td><td>${highlight(s)}</td></tr>`;
-      });
-      rows += "</tbody></table>";
-      tbl.innerHTML = rows;
-      el.appendChild(tbl);
-      activeFloating = tbl;
+      document.querySelectorAll('.model-entry').forEach(d => d.classList.remove('active'));
+      div.classList.add('active');
+      activeModel = div;
+      showPartsPopup(div, code);
     }
 
-    async function searchPartsFromInput() {
-      const val = document.getElementById("watchInput").value.trim();
-      if (!val) return;
-      allModels.forEach(m => {
-        if (m.dataset.article === val) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-      togglePartsTable(allModels.find(m => m.dataset.article === val), val);
+    function showPartsPopup(triggerElement, code) {
+      const parts = getPartsByModelCode(code); // отримати дані
+      const popup = document.createElement('div');
+      popup.className = 'parts-popup';
+      const rect = triggerElement.getBoundingClientRect();
+      popup.style.top = `${window.scrollY + rect.top}px`;
+
+      let rows = parts.map(p => `
+        <tr>
+          <td><img class="part-img" src="${p.photo}"/></td>
+          <td>${p.code}</td>
+          <td>${p.name}</td>
+          <td>${p.income}</td>
+          <td>${p.outcome}</td>
+          <td class="${p.stock === 0 ? 'zero-stock' : ''}">${p.stock}</td>
+        </tr>`).join('');
+
+      popup.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прих.</th><th>Розх.</th><th>Зал.</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+
+      document.body.appendChild(popup);
+      activePopup = popup;
     }
 
-    document.getElementById("watchInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") searchPartsFromInput();
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchParts();
     });
+    document.getElementById('searchButton').addEventListener('click', searchParts);
 
-    window.onload = () => {
-      loadAvailableModels();
-    };
+    function searchParts() {
+      const code = document.getElementById('searchInput').value.trim();
+      if (!code) return;
+      if (activePopup) activePopup.remove();
+      document.querySelectorAll('.model-entry').forEach(d => d.classList.remove('active'));
+      activeModel = null;
+      const trigger = document.getElementById('search-bar');
+      showPartsPopup(trigger, code);
+    }
+
+    // Проста демо-структура
+    const models = [
+      { code: "1202-0162", name: "020 Gold-Gold", hasAllParts: true },
+      { code: "1202-0163", name: "020 Silver-Silver", hasAllParts: true },
+      { code: "1202-0270", name: "021 Black Steel", hasAllParts: false }
+    ];
+
+    function getPartsByModelCode(code) {
+      if (code === "1202-0270") return [
+        { photo: "https://via.placeholder.com/40", code: "1044-0170", name: "Sanda 7013 Black Mesh", income: 20, outcome: 0, stock: 20 },
+        { photo: "https://via.placeholder.com/40", code: "8000-0383", name: "Сталевий браслет Awarder 021 Black 22 мм", income: 37, outcome: 0, stock: 37 },
+      ];
+      return [
+        { photo: "https://via.placeholder.com/40", code: "8000-0153", name: "Корпус для годинника AWARDER 020 Срібло", income: 79, outcome: 0, stock: 79 },
+        { photo: "https://via.placeholder.com/40", code: "1051-0641", name: "Шкіряний ремінець Premium 18x16 мм. Black", income: 508, outcome: 0, stock: 508 },
+        { photo: "https://via.placeholder.com/40", code: "8000-0155", name: "Циферблат для годинника AWARDER 020 Срібло", income: 104, outcome: 0, stock: 104 }
+      ];
+    }
+
+    renderModels();
   </script>
 </body>
 </html>
