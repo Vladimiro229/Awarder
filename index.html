@@ -20,20 +20,17 @@
     }
     .container {
       display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
+      flex-direction: column;
+      gap: 20px;
       padding: 0 20px 30px;
       max-width: 1200px;
       margin: 0 auto;
-      position: relative;
     }
-    .left {
+    .model-list {
       background: #fff;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
     }
     .subtitle {
       font-size: 20px;
@@ -51,7 +48,6 @@
       border-radius: 10px;
       cursor: pointer;
       transition: 0.2s;
-      position: relative;
     }
     .model-item:hover {
       transform: scale(1.01);
@@ -78,7 +74,6 @@
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
     }
     .search-box input {
       flex: 1;
@@ -96,64 +91,41 @@
       cursor: pointer;
       font-size: 17px;
     }
-    #resultsTable {
+    .model-details {
+      margin: 10px 0 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 15px;
+    }
+    .model-details table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      display: none;
-      margin-bottom: 15px;
     }
-    #resultsTable th, #resultsTable td {
+    .model-details th, .model-details td {
       padding: 8px;
       border: 1px solid #eee;
       text-align: center;
       font-size: 15px;
     }
-    #resultsTable img {
+    .model-details img {
       max-height: 60px;
       object-fit: contain;
       cursor: pointer;
       transition: transform 0.2s ease;
     }
-    #resultsTable img:hover {
+    .model-details img:hover {
       transform: scale(2);
-      z-index: 999;
     }
     .red-text {
       color: #e63946;
       font-weight: bold;
     }
-    #loader, #noResults {
-      text-align: center;
-      margin-top: 10px;
-      font-style: italic;
-      color: #555;
-      display: none;
-    }
     .total-info {
-      margin-top: 10px;
-      font-weight: 500;
       text-align: right;
       font-size: 15px;
-      color: #333;
-      display: none;
-    }
-    .active-model {
-      background: #fff6e0 !important;
-      border-color: #f2dab0 !important;
-    }
-    #floatingDetails {
-      position: absolute;
-      left: 360px;
-      width: 750px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      padding: 20px;
-      z-index: 100;
-      display: none;
+      margin-top: 10px;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -163,48 +135,166 @@
   </div>
   <h1>Наявність деталей для індивідуального годинника</h1>
   <div class="container">
-    <div class="left">
+    <div class="search-box">
+      <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
+      <button onclick="searchParts(true)">Пошук</button>
+    </div>
+    <div id="manualResults"></div>
+    <div class="model-list">
       <div class="subtitle">Доступні моделі годинників</div>
       <div id="modelList"></div>
     </div>
   </div>
 
-  <div class="container">
-    <div class="search-box" style="width: 100%;">
-      <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-      <button onclick="searchParts(true)">Пошук</button>
-    </div>
-    <div id="loader">Завантаження...</div>
-    <div id="noResults">Нічого не знайдено.</div>
-    <table id="resultsTable">
-      <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="total-info" id="summary"></div>
-  </div>
-
-  <div id="floatingDetails">
-    <table id="floatingResultsTable">
-      <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="total-info" id="floatingSummary"></div>
-  </div>
-
   <script>
-    function selectModelByArticle(article) {
-      const index = allModels.findIndex(m => m.dataset.article === article);
-      if (index !== -1) {
-        setActiveModel(index);
-        const modelElement = allModels[index];
-        const floating = document.getElementById('floatingDetails');
-        const rect = modelElement.getBoundingClientRect();
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        floating.style.top = `${rect.top + scrollTop}px`;
-        floating.style.display = 'block';
-        document.getElementById("watchInput").value = article;
-        searchParts(false);
-      }
+    let allModels = [];
+    let currentModelIndex = -1;
+
+    async function fetchSheet(range) {
+      const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
+      const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
+      const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
+      const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
+      const data = await res.json();
+      return data.values || [];
+    }
+
+    async function loadAvailableModels() {
+      const raw = await fetchSheet("Годинники!A:D");
+      const [, ...rows] = raw;
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const rawDetail = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDetail;
+      const container = document.getElementById("modelList");
+
+      rows.forEach(r => {
+        const article = (r[2] || "").trim();
+        const name = (r[3] || "").trim();
+        if (!/^(1201|1202)-/.test(article)) return;
+        if (/^(Сталевий браслет|Годинник наручний)/.test(name)) return;
+
+        const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
+        const div = document.createElement("div");
+        div.className = "model-item";
+        div.dataset.article = article;
+        div.onclick = () => showModelDetails(div, article);
+        div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
+
+        const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
+        let statusClass = 'status-green';
+        if (needed.length === 0) statusClass = 'status-red';
+        else {
+          const missing = needed.some(p => {
+            const f = detailData.find(d => d[1]?.trim() === p);
+            return !(parseInt(f?.[5] || "0", 10));
+          });
+          if (missing) statusClass = 'status-red';
+        }
+        div.querySelector('.status-dot').classList.add(statusClass);
+        container.appendChild(div);
+      });
+
+      allModels = [...document.querySelectorAll(".model-item")];
+    }
+
+    async function showModelDetails(div, article) {
+      document.querySelectorAll(".model-details").forEach(el => el.remove());
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const rawDet = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDet;
+
+      const partRows = linkData.filter(r => r[1]?.trim() === article);
+      const parts = partRows.map(r => r[3]?.trim());
+      if (!parts.length) return;
+
+      const block = document.createElement("div");
+      block.className = "model-details";
+
+      let html = `<table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead><tbody>`;
+      let total = 0;
+      parts.forEach(a => {
+        const d = detailData.find(r => r[1]?.trim() === a) || [];
+        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
+        const name = d[2] || 'Без назви';
+        const p = d[3] || 0;
+        const o = d[4] || 0;
+        const s = d[5] || 0;
+        const isZero = parseInt(s) === 0;
+        const mark = v => isZero && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v;
+        total += parseInt(s);
+        html += `<tr>
+          <td><img src="${img}" onclick="window.open('${img}')"></td>
+          <td>${a}</td>
+          <td>${name}</td>
+          <td>${mark(p)}</td>
+          <td>${mark(o)}</td>
+          <td>${mark(s)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table><div class='total-info'>Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.</div>`;
+
+      block.innerHTML = html;
+      div.insertAdjacentElement("afterend", block);
+    }
+
+    async function searchParts(isManual = false) {
+      document.getElementById("manualResults").innerHTML = "";
+      const input = document.getElementById("watchInput").value.trim();
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const rawDet = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDet;
+
+      const partRows = linkData.filter(r => r[1]?.trim() === input);
+      const parts = partRows.map(r => r[3]?.trim());
+      if (!parts.length) return;
+
+      const block = document.createElement("div");
+      block.className = "model-details";
+
+      let html = `<table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead><tbody>`;
+      let total = 0;
+      parts.forEach(a => {
+        const d = detailData.find(r => r[1]?.trim() === a) || [];
+        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
+        const name = d[2] || 'Без назви';
+        const p = d[3] || 0;
+        const o = d[4] || 0;
+        const s = d[5] || 0;
+        const isZero = parseInt(s) === 0;
+        const mark = v => isZero && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v;
+        total += parseInt(s);
+        html += `<tr>
+          <td><img src="${img}" onclick="window.open('${img}')"></td>
+          <td>${a}</td>
+          <td>${name}</td>
+          <td>${mark(p)}</td>
+          <td>${mark(o)}</td>
+          <td>${mark(s)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table><div class='total-info'>Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.</div>`;
+      block.innerHTML = html;
+      document.getElementById("manualResults").appendChild(block);
+    }
+
+    async function loadLastUpdatedDate() {
+      const raw = await fetchSheet("Залишки!K1");
+      const date = raw?.[0]?.[0] || "невідомо";
+      document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
+    }
+
+    document.getElementById("watchInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") searchParts(true);
+    });
+
+    window.onload = async () => {
+      await Promise.all([
+        loadAvailableModels(),
+        loadLastUpdatedDate()
+      ]);
     }
   </script>
 </body>
