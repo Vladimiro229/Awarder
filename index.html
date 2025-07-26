@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Наявність деталей</title>
+  <title>Наявність деталей для індивідуального годинника</title>
   <style>
     body {
       margin: 0;
@@ -14,7 +14,7 @@
     }
     h1 {
       text-align: center;
-      margin: 30px 0;
+      margin: 30px 0 10px;
       font-size: 28px;
       font-weight: 600;
     }
@@ -31,83 +31,79 @@
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       width: 360px;
-      flex-shrink: 0;
+      min-width: 280px;
     }
     .right {
       flex: 1;
       position: relative;
     }
-    .subtitle {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      text-align: center;
-    }
     .model-item {
       display: flex;
       align-items: center;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      background: #fff;
+      padding: 15px;
       margin-bottom: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
       cursor: pointer;
       transition: 0.2s;
-    }
-    .model-item img {
-      height: 60px;
-      margin-right: 10px;
     }
     .model-item:hover {
       transform: scale(1.01);
       border-color: #007bff;
     }
-    .active-model {
-      background: #fff6e0 !important;
-      border-color: #f2dab0 !important;
+    .model-item img {
+      height: 50px;
+      margin-right: 10px;
     }
     .status-dot {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       margin-left: auto;
     }
     .status-green {
-      background: #2ecc71;
+      background: #26c281;
+      box-shadow: 0 0 0 3px #c3f3df inset;
     }
     .status-red {
-      background: #e74c3c;
+      background: #ff4d4d;
+      box-shadow: 0 0 0 3px #ffdada inset;
     }
     .search-box {
       display: flex;
-      margin-bottom: 20px;
       gap: 10px;
+      margin-bottom: 15px;
     }
     .search-box input {
       flex: 1;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 10px;
       border: 1px solid #ccc;
+      font-size: 17px;
     }
     .search-box button {
-      padding: 10px 20px;
-      background: #111;
-      color: #fff;
+      padding: 12px 20px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
+      background-color: #111;
+      color: white;
       cursor: pointer;
+      font-size: 16px;
     }
     .floating-table {
       position: absolute;
+      left: 400px;
+      min-width: 700px;
+      max-width: 90vw;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
-      overflow: hidden;
-      z-index: 10;
-      animation: fadein 0.2s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      z-index: 999;
+      animation: fadeIn 0.2s ease-in-out;
     }
-    @keyframes fadein {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .floating-table table {
@@ -115,28 +111,30 @@
       border-collapse: collapse;
     }
     .floating-table th, .floating-table td {
-      padding: 8px;
-      border: 1px solid #ddd;
+      padding: 10px;
+      border: 1px solid #eee;
       text-align: center;
+      font-size: 15px;
     }
-    .floating-table img {
-      max-height: 50px;
+    .floating-table .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
     }
     .red-text {
-      color: red;
+      color: #e63946;
       font-weight: bold;
     }
-    .close-btn {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      font-size: 20px;
-      cursor: pointer;
+    .active-model {
+      background: #fff6e0 !important;
+      border-color: #f2dab0 !important;
     }
     @media (max-width: 768px) {
       .container { flex-direction: column; }
-      .left { width: 100%; }
-      .floating-table { width: 95vw; left: 2.5vw !important; right: auto !important; }
+      .floating-table { left: 0; width: 100%; top: auto !important; position: relative; margin-top: 10px; }
     }
   </style>
 </head>
@@ -144,89 +142,100 @@
   <h1>Наявність деталей для індивідуального годинника</h1>
   <div class="container">
     <div class="left">
-      <div class="subtitle">Доступні моделі годинників</div>
+      <h3>Доступні моделі годинників</h3>
       <div id="modelList"></div>
     </div>
     <div class="right">
       <div class="search-box">
-        <input id="watchInput" placeholder="Введіть артикул моделі..." />
+        <input id="watchInput" placeholder="Введіть артикул моделі...">
         <button onclick="searchParts()">Пошук</button>
       </div>
+      <div id="searchResults"></div>
     </div>
   </div>
 
   <script>
-    const modelList = document.getElementById("modelList");
-    const input = document.getElementById("watchInput");
-    const dummyModels = [
-      { art: "1202-0269", name: "021 Gold Leather", img: "https://abertime.com.ua/image/data/price_google/all_price/big/SK-1202-0269.jpg", status: "red" },
-      { art: "1202-0270", name: "021 Black Steel", img: "https://abertime.com.ua/image/data/price_google/all_price/big/SK-1202-0270.jpg", status: "green" },
-    ];
-    const dummyParts = {
-      "1202-0269": [
-        ["8000-0357", "Awarder 021 Gold Clean", 0, 0, 0],
-        ["1051-0638", "Ремінець шкіряний 22 мм Black", 214, 0, 214],
-        ["1051-0627", "Шкіряний ремінець Premium 22×18 мм. Black", 411, 0, 411],
-      ],
-      "1202-0270": [
-        ["1051-0625", "Ремінець сталевий 22 мм Silver", 87, 3, 84]
-      ]
-    };
+    let allModels = [];
+    let currentModelIndex = -1;
 
-    let activeModel = null;
+    function mockModels() {
+      const models = [
+        { id: '1202-0269', name: '021 Gold Leather', status: 'red' },
+        { id: '1202-0270', name: '021 Black Steel', status: 'green' }
+      ];
+      const list = document.getElementById("modelList");
+      models.forEach((m, i) => {
+        const div = document.createElement("div");
+        div.className = "model-item";
+        div.dataset.index = i;
+        div.dataset.article = m.id;
+        div.innerHTML = `<img src="https://abertime.com.ua/image/data/price_google/all_price/big/SK-${m.id}.jpg">
+                          <div><strong>${m.id}</strong> — ${m.name}</div>
+                          <span class="status-dot ${m.status === 'green' ? 'status-green' : 'status-red'}"></span>`;
+        div.onclick = e => selectModel(i, div);
+        list.appendChild(div);
+      });
+      allModels = [...document.querySelectorAll(".model-item")];
+    }
 
-    dummyModels.forEach((m, i) => {
-      const div = document.createElement("div");
-      div.className = "model-item";
-      div.dataset.index = i;
-      div.innerHTML = `<img src="${m.img}"/><div><strong>${m.art}</strong> — ${m.name}</div><div class="status-dot status-${m.status}"></div>`;
-      div.addEventListener("click", () => showPartsPopup(m.art, div));
-      modelList.appendChild(div);
-    });
+    function selectModel(index, el) {
+      if (currentModelIndex >= 0) allModels[currentModelIndex].classList.remove("active-model");
+      currentModelIndex = index;
+      el.classList.add("active-model");
+      showFloatingTable(el);
+    }
 
-    function showPartsPopup(article, relativeTo) {
-      removeFloating();
-      const data = dummyParts[article];
-      if (!data) return;
-      const rect = relativeTo.getBoundingClientRect();
+    function showFloatingTable(targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
 
+      removeFloatingTable();
       const table = document.createElement("div");
       table.className = "floating-table";
-      table.style.top = `${rect.top + window.scrollY}px`;
-      table.style.left = `${rect.right + 10}px`;
-      table.innerHTML = `<span class="close-btn" onclick="removeFloating()">&times;</span>
-      <table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead><tbody>
-        ${data.map(r => `<tr>
-          <td><img src="https://abertime.com.ua/image/data/price_google/all_price/big/SK-${r[0]}.jpg"></td>
-          <td>${r[0]}</td>
-          <td>${r[1]}</td>
-          <td>${highlight(r[2], r[4])}</td>
-          <td>${highlight(r[3], r[4])}</td>
-          <td>${highlight(r[4], r[4])}</td>
-        </tr>`).join('')}
-      </tbody></table>`;
+      table.style.top = `${rect.top + scrollTop}px`;
 
-      document.body.appendChild(table);
+      table.innerHTML = `
+        <div class="close-btn" onclick="removeFloatingTable()">&times;</div>
+        <table>
+          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+          <tbody>
+            <tr><td><img src="https://abertime.com.ua/image/data/price_google/all_price/big/SK-1051-0625.jpg" height="40"></td>
+              <td>1051-0625</td><td>Ремінець сталевий 22 мм Silver</td><td>87</td><td>3</td><td>84</td></tr>
+          </tbody>
+        </table>`;
+
+      document.querySelector(".right").appendChild(table);
     }
 
-    function highlight(val, stock) {
-      return parseInt(stock) === 0 ? `<span class="red-text">${val}</span>` : val;
+    function removeFloatingTable() {
+      const ft = document.querySelector(".floating-table");
+      if (ft) ft.remove();
     }
 
-    function removeFloating() {
-      const old = document.querySelector(".floating-table");
-      if (old) old.remove();
+    function searchParts() {
+      removeFloatingTable();
+      document.getElementById("searchResults").innerHTML = `
+        <div class="floating-table" style="position:relative;">
+          <div class="close-btn" onclick="removeFloatingTable()">&times;</div>
+          <table>
+            <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+            <tbody><tr><td><img src="https://abertime.com.ua/image/data/price_google/all_price/big/SK-1051-0625.jpg" height="40"></td>
+              <td>1051-0625</td><td>Ремінець сталевий 22 мм Silver</td><td>87</td><td>3</td><td>84</td></tr></tbody>
+          </table>
+        </div>`;
     }
 
     document.addEventListener("keydown", e => {
-      if (e.key === "Escape") removeFloating();
+      if (e.key === "Escape") removeFloatingTable();
+      if (e.key === "ArrowDown" && currentModelIndex < allModels.length - 1) {
+        selectModel(currentModelIndex + 1, allModels[currentModelIndex + 1]);
+      }
+      if (e.key === "ArrowUp" && currentModelIndex > 0) {
+        selectModel(currentModelIndex - 1, allModels[currentModelIndex - 1]);
+      }
     });
 
-    function searchParts() {
-      const value = input.value.trim();
-      const el = [...modelList.children].find(d => d.innerText.includes(value));
-      if (el) showPartsPopup(value, el);
-    }
+    window.onload = mockModels;
   </script>
 </body>
 </html>
