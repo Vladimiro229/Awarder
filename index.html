@@ -10,6 +10,7 @@
       font-family: 'Segoe UI', sans-serif;
       background: #e6e6e6;
       color: #111;
+      font-size: 16px;
     }
     h1 {
       text-align: center;
@@ -27,7 +28,7 @@
     }
     .left, .right {
       background: #fff;
-      padding: 20px;
+      padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       flex: 1;
@@ -46,7 +47,7 @@
     .model-item {
       display: flex;
       align-items: center;
-      padding: 10px;
+      padding: 15px;
       margin-bottom: 10px;
       background: #fff;
       border: 1px solid #ccc;
@@ -83,19 +84,19 @@
     }
     .search-box input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 17px;
     }
     .search-box button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
       border-radius: 10px;
       background-color: #111;
       color: white;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 17px;
     }
     #resultsTable {
       width: 100%;
@@ -105,16 +106,6 @@
       overflow: hidden;
       display: none;
     }
-#resultsTable img {
-  max-height: 60px;
-  object-fit: contain;
-  transition: transform 0.2s ease;
-}
-#resultsTable img:hover {
-  transform: scale(2);
-  z-index: 999;
-}
-
     #resultsTable th, #resultsTable td {
       padding: 8px;
       border: 1px solid #eee;
@@ -122,8 +113,14 @@
       font-size: 15px;
     }
     #resultsTable img {
-      max-height: 50px;
+      max-height: 60px;
+      object-fit: contain;
       cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #resultsTable img:hover {
+      transform: scale(2);
+      z-index: 999;
     }
     .red-text {
       color: #e63946;
@@ -144,37 +141,10 @@
       color: #333;
       display: none;
     }
-body {
-  font-size: 16px;
-}
-
-.left, .right {
-  padding: 25px;
-}
-
-.model-item {
-  padding: 15px;
-}
-
-.search-box input {
-  font-size: 17px;
-  padding: 12px;
-}
-
-.search-box button {
-  font-size: 17px;
-  padding: 12px 24px;
-}
-
-#resultsTable img {
-  max-height: 60px;
-  object-fit: contain;
-  transition: transform 0.2s ease;
-}
-#resultsTable img:hover {
-  transform: scale(2);
-  z-index: 999;
-}
+    .active-model {
+      background: #fffacc !important;
+      border-color: #e0b800 !important;
+    }
     @media (max-width: 768px) {
       .container { flex-direction: column; }
       .search-box { flex-direction: column; }
@@ -213,6 +183,8 @@ body {
     const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
     const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
     const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
+    let allModels = [];
+    let currentModelIndex = -1;
 
     async function fetchSheet(range) {
       const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
@@ -239,21 +211,64 @@ body {
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
-        div.onclick = () => {
-          document.getElementById("watchInput").value = article;
-          searchParts();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        };
+        div.onclick = () => selectModelByArticle(article);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
+
         const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
-        const missing = needed.some(p => {
-          const f = detailData.find(d => d[1]?.trim() === p);
-          return !(parseInt(f?.[5] || "0", 10));
-        });
-        div.querySelector('.status-dot').classList.add(missing ? 'status-red' : 'status-green');
+
+        let statusClass = 'status-green';
+        if (needed.length === 0) {
+          statusClass = 'status-red';
+        } else {
+          const missing = needed.some(p => {
+            const f = detailData.find(d => d[1]?.trim() === p);
+            return !(parseInt(f?.[5] || "0", 10));
+          });
+          if (missing) statusClass = 'status-red';
+        }
+
+        div.querySelector('.status-dot').classList.add(statusClass);
         container.appendChild(div);
       });
+
+      allModels = [...document.querySelectorAll(".model-item")];
     }
+
+    function selectModelByArticle(article) {
+      const index = allModels.findIndex(m => m.dataset.article === article);
+      if (index !== -1) {
+        setActiveModel(index);
+        document.getElementById("watchInput").value = article;
+        searchParts();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function setActiveModel(index) {
+      if (currentModelIndex >= 0) {
+        allModels[currentModelIndex].classList.remove("active-model");
+      }
+      currentModelIndex = index;
+      allModels[currentModelIndex].classList.add("active-model");
+      allModels[currentModelIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown") {
+        if (currentModelIndex < allModels.length - 1) {
+          setActiveModel(currentModelIndex + 1);
+          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
+          searchParts();
+        }
+      }
+      if (e.key === "ArrowUp") {
+        if (currentModelIndex > 0) {
+          setActiveModel(currentModelIndex - 1);
+          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
+          searchParts();
+        }
+      }
+    });
 
     async function searchParts() {
       const input = document.getElementById("watchInput").value.trim();
