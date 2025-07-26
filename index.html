@@ -8,76 +8,62 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #e6e6e6;
+      background-color: #e6e6e6;
       color: #111;
-      font-size: 16px;
     }
     h1 {
       text-align: center;
-      margin: 30px 0;
+      margin: 30px 0 10px;
       font-size: 28px;
       font-weight: 600;
     }
     .container {
       display: flex;
-      flex-wrap: wrap;
       gap: 30px;
-      padding: 0 20px 30px;
-      max-width: 1200px;
+      padding: 0 20px 50px;
+      max-width: 1300px;
       margin: 0 auto;
-      position: relative;
     }
     .left {
+      flex: 1;
       background: #fff;
-      padding: 25px;
       border-radius: 12px;
+      padding: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
     }
-    .right {
-      flex: 1;
-      min-width: 300px;
-    }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .model-item {
+    .model {
       display: flex;
       align-items: center;
-      padding: 15px;
+      gap: 12px;
+      padding: 12px 16px;
       margin-bottom: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
+      border: 2px solid transparent;
       border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s ease;
+      background: #fff;
     }
-    .model-item:hover {
-      transform: scale(1.01);
-      border-color: #007bff;
+    .model:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
     }
-    .model-item img {
-      height: 50px;
-      margin-right: 10px;
+    .model.active {
+      background: #fff7e6;
+      border: 2px solid #ffe0a3;
     }
     .status-dot {
-      width: 14px;
-      height: 14px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       margin-left: auto;
     }
-    .status-green {
-      background: #26c281;
-      box-shadow: 0 0 0 3px #c3f3df inset;
+    .status-green { background: #22c55e; }
+    .status-red { background: #ef4444; }
+
+    .right {
+      width: 400px;
     }
-    .status-red {
-      background: #ff4d4d;
-      box-shadow: 0 0 0 3px #ffdada inset;
-    }
+
     .search-box {
       display: flex;
       gap: 10px;
@@ -85,243 +71,161 @@
     }
     .search-box input {
       flex: 1;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 17px;
+      font-size: 16px;
     }
     .search-box button {
-      padding: 12px 24px;
+      background: #111;
+      color: #fff;
       border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 17px;
     }
-    .floating-box {
+
+    .details-popup {
       position: absolute;
-      width: 600px;
-      max-width: 90vw;
+      z-index: 10;
       background: #fff;
-      border: 1px solid #ccc;
       border-radius: 12px;
-      padding: 15px 20px 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 999;
-      animation: fadeIn 0.3s ease-in-out;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      width: 640px;
     }
-    .floating-box .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #888;
-      cursor: pointer;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .floating-box table {
+    .details-popup table {
       width: 100%;
       border-collapse: collapse;
+      margin-bottom: 10px;
     }
-    .floating-box th, .floating-box td {
+    .details-popup th, .details-popup td {
       padding: 8px;
-      border: 1px solid #eee;
-      text-align: center;
-      font-size: 15px;
-    }
-    .floating-box img {
-      max-height: 60px;
-      object-fit: contain;
-      cursor: pointer;
-    }
-    .red-text {
-      color: #e63946;
-      font-weight: bold;
-    }
-    .total-info {
-      margin-top: 10px;
-      font-weight: 500;
-      text-align: right;
+      border: 1px solid #ccc;
+      text-align: left;
       font-size: 14px;
-      color: #333;
     }
-    .active-model {
-      background: #fff6e0 !important;
-      border-color: #f2dab0 !important;
+    .details-popup .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
     }
+    .details-popup .close-btn:hover {
+      color: #000;
+    }
+
     @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .floating-box {
-        position: static;
-        width: 100%;
-        margin-top: 10px;
+      .container {
+        flex-direction: column;
+      }
+      .details-popup {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 95% !important;
       }
     }
   </style>
 </head>
 <body>
-  <div id="updateInfo" style="background:#fff6e0;padding:10px;text-align:center;font-weight:500;">
-    🕒 Завантаження дати оновлення...
-  </div>
   <h1>Наявність деталей для індивідуального годинника</h1>
   <div class="container">
-    <div class="left">
-      <div class="subtitle">Доступні моделі годинників</div>
-      <div id="modelList"></div>
-    </div>
+    <div class="left" id="modelList"></div>
     <div class="right">
       <div class="search-box">
-        <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-        <button onclick="searchParts(true)">Пошук</button>
+        <input type="text" id="searchInput" placeholder="Введіть артикул моделі..." />
+        <button onclick="searchModel()">Пошук</button>
       </div>
-      <div id="searchResults"></div>
     </div>
   </div>
-  <div id="floatingDetails" class="floating-box" style="display:none"></div>
 
   <script>
-    const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
-    const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
-    const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
-    let allModels = [];
-    let currentModelIndex = -1;
+    const models = [
+      { code: "1202-0163", name: "020 Silver-Silver", status: "green" },
+      { code: "1202-0162", name: "020 Gold-Gold", status: "green" },
+      { code: "1202-0267", name: "021 Black Leather", status: "green" },
+      { code: "1202-0268", name: "021 Silver Leather", status: "red" },
+      { code: "1202-0269", name: "021 Gold Leather", status: "red" },
+      { code: "1202-0270", name: "021 Black Steel", status: "green" },
+      { code: "1202-0271", name: "021 Silver Steel", status: "red" },
+      { code: "1202-0272", name: "021 Black Mesh", status: "green" },
+      { code: "1202-0273", name: "021 Silver Mesh", status: "red" }
+    ];
 
-    async function fetchSheet(range) {
-      const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
-      const data = await res.json();
-      return data.values || [];
-    }
+    let currentIndex = -1;
 
-    async function loadAvailableModels() {
-      const raw = await fetchSheet("Годинники!A:D");
-      const [, ...rows] = raw;
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const rawDetail = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDetail;
-      const container = document.getElementById("modelList");
+    const modelList = document.getElementById("modelList");
 
-      rows.forEach((r) => {
-        const article = (r[2] || "").trim();
-        const name = (r[3] || "").trim();
-        if (!/^(1201|1202)-/.test(article)) return;
-        if (/^(Сталевий браслет|Годинник наручний)/.test(name)) return;
+    models.forEach((m, idx) => {
+      const div = document.createElement("div");
+      div.className = "model";
+      div.dataset.code = m.code;
+      div.innerHTML = `<strong>${m.code}</strong> — ${m.name} <span class="status-dot status-${m.status}"></span>`;
+      div.addEventListener("click", () => showDetails(m.code, div));
+      modelList.appendChild(div);
+    });
 
-        const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
-        const div = document.createElement("div");
-        div.className = "model-item";
-        div.dataset.article = article;
-        div.onclick = () => selectModelByArticle(article);
-        div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
-
-        const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
-        let statusClass = 'status-green';
-        if (needed.length === 0 || needed.some(p => {
-          const f = detailData.find(d => d[1]?.trim() === p);
-          return !(parseInt(f?.[5] || "0", 10));
-        })) {
-          statusClass = 'status-red';
-        }
-        div.querySelector('.status-dot').classList.add(statusClass);
-        container.appendChild(div);
-      });
-
-      allModels = [...document.querySelectorAll(".model-item")];
-    }
-
-    function selectModelByArticle(article) {
-      allModels.forEach((el, idx) => {
-        if (el.dataset.article === article) {
-          if (currentModelIndex >= 0) allModels[currentModelIndex].classList.remove("active-model");
-          currentModelIndex = idx;
-          el.classList.add("active-model");
-          document.getElementById("watchInput").value = article;
-          showFloatingDetails(article, el.offsetTop);
-        }
-      });
-    }
-
-    async function searchParts(isSearch = false, offsetTop = 0) {
-      const input = document.getElementById("watchInput").value.trim();
-      const rawLink = await fetchSheet("Комплектації!A:D");
-      const [, ...linkData] = rawLink;
-      const partRows = linkData.filter(r => r[1]?.trim() === input);
-      const parts = partRows.map(r => r[3]?.trim());
-      const rawDet = await fetchSheet("Деталі!A:F");
-      const [, ...detailData] = rawDet;
-
-      let html = "";
-      let total = 0;
-
-      parts.forEach(a => {
-        const d = detailData.find(r => r[1]?.trim() === a) || [];
-        const name = d[2]?.trim() || "Без назви";
-        const qty = parseInt(d[5] || "0", 10) || 0;
-        total += qty;
-        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
-
-        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
-        const isMissing = parseInt(s) === 0;
-        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class='red-text'>${v}</span>` : v);
-
-        html += `
-          <tr>
-            <td><img src="${img}" onclick="window.open('${img}')"></td>
-            <td>${a}</td>
-            <td>${name}</td>
-            <td>${highlight(p)}</td>
-            <td>${highlight(o)}</td>
-            <td>${highlight(s)}</td>
-          </tr>
-        `;
-      });
-
-      const table = `
-        <div class='close-btn' onclick="document.getElementById('floatingDetails').style.display='none'">&times;</div>
-        <table>
-          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-          <tbody>${html}</tbody>
-        </table>
-        <div class="total-info">Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.</div>
-      `;
-
-      if (isSearch) {
-        document.getElementById("searchResults").innerHTML = `<div class='floating-box' style='position:static; margin-top:10px;'>${table}</div>`;
-        document.getElementById("floatingDetails").style.display = "none";
-      } else {
-        const floating = document.getElementById("floatingDetails");
-        floating.innerHTML = table;
-        floating.style.top = `${offsetTop}px`;
-        floating.style.right = `20px`;
-        floating.style.display = "block";
+    function searchModel() {
+      const val = document.getElementById("searchInput").value.trim();
+      const target = [...document.querySelectorAll(".model")].find(el => el.dataset.code === val);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlightModel(target);
+        showDetails(val, target, true);
       }
     }
 
-    function showFloatingDetails(article, offsetTop) {
-      searchParts(false, offsetTop);
+    function highlightModel(target) {
+      document.querySelectorAll(".model").forEach(el => el.classList.remove("active"));
+      target.classList.add("active");
+      currentIndex = [...document.querySelectorAll(".model")].indexOf(target);
     }
 
-    async function loadLastUpdatedDate() {
-      const raw = await fetchSheet("Залишки!K1");
-      const date = raw?.[0]?.[0] || "невідомо";
-      document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
-    }
+    function showDetails(code, el, fromSearch = false) {
+      const rect = el.getBoundingClientRect();
+      const existing = document.querySelector(".details-popup");
+      if (existing) existing.remove();
 
-    window.onload = async () => {
-      await Promise.all([
-        loadAvailableModels(),
-        loadLastUpdatedDate()
-      ]);
-    };
+      const popup = document.createElement("div");
+      popup.className = "details-popup";
+      popup.innerHTML = `
+        <div class="close-btn" onclick="this.parentElement.remove()">×</div>
+        <table>
+          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+          <tbody>
+            <tr><td><img src="https://via.placeholder.com/40" /></td><td>0000-0001</td><td>Деталь 1</td><td>10</td><td>2</td><td>8</td></tr>
+            <tr><td><img src="https://via.placeholder.com/40" /></td><td>0000-0002</td><td>Деталь 2</td><td>20</td><td>5</td><td>15</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:13px;padding-top:4px;">Загальна кількість деталей: 2 | Сумарний залишок: 23 од.</div>
+      `;
+
+      document.body.appendChild(popup);
+      const topOffset = window.scrollY + rect.top;
+      popup.style.top = fromSearch ? "130px" : `${topOffset}px`;
+      popup.style.left = fromSearch ? "50%" : `${rect.right + 20}px`;
+      popup.style.transform = fromSearch ? "translateX(-50%)" : "none";
+
+      highlightModel(el);
+    }
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        document.getElementById("floatingDetails").style.display = "none";
+      const list = [...document.querySelectorAll(".model")];
+      if (e.key === "ArrowDown") {
+        currentIndex = (currentIndex + 1) % list.length;
+        list[currentIndex].scrollIntoView({ block: "center", behavior: "smooth" });
+        highlightModel(list[currentIndex]);
+        showDetails(list[currentIndex].dataset.code, list[currentIndex]);
+      } else if (e.key === "ArrowUp") {
+        currentIndex = (currentIndex - 1 + list.length) % list.length;
+        list[currentIndex].scrollIntoView({ block: "center", behavior: "smooth" });
+        highlightModel(list[currentIndex]);
+        showDetails(list[currentIndex].dataset.code, list[currentIndex]);
+      } else if (e.key === "Escape") {
+        const popup = document.querySelector(".details-popup");
+        if (popup) popup.remove();
       }
     });
   </script>
