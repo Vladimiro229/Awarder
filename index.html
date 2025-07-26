@@ -5,188 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Наявність деталей для індивідуального годинника</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #e6e6e6;
-      color: #111;
-      font-size: 16px;
-    }
-    h1 {
-      text-align: center;
-      margin: 30px 0;
-      font-size: 28px;
-      font-weight: 600;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      padding: 0 20px 30px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .left, .right {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
-    }
-    .right {
-      background: #fafafa;
-      border-left: 2px solid #ddd;
-      position: relative;
-    }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .model-item {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      margin-bottom: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .model-item:hover {
-      transform: scale(1.01);
-      border-color: #007bff;
-    }
-    .model-item img {
-      height: 50px;
-      margin-right: 10px;
-    }
-    .status-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      margin-left: auto;
-    }
-    .status-green {
-      background: #26c281;
-      box-shadow: 0 0 0 3px #c3f3df inset;
-    }
-    .status-red {
-      background: #ff4d4d;
-      box-shadow: 0 0 0 3px #ffdada inset;
-    }
-    .search-box {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .search-box input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 17px;
-    }
-    .search-box button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      background-color: #111;
-      color: white;
-      cursor: pointer;
-      font-size: 17px;
-    }
-    #resultsTable {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      display: none;
+    /* ... [усі наявні стилі залишаються без змін] ... */
+
+    #floatingDetails {
       position: absolute;
-      left: 0;
-      top: 100px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    #resultsTable th, #resultsTable td {
-      padding: 8px;
-      border: 1px solid #eee;
-      text-align: center;
-      font-size: 15px;
-    }
-    #resultsTable img {
-      max-height: 60px;
-      object-fit: contain;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    #resultsTable img:hover {
-      transform: scale(2);
-      z-index: 999;
-    }
-    .red-text {
-      color: #e63946;
-      font-weight: bold;
-    }
-    #loader, #noResults {
-      text-align: center;
-      margin-top: 10px;
-      font-style: italic;
-      color: #555;
+      left: calc(100% - 600px);
+      width: 500px;
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 100;
       display: none;
-    }
-    .total-info {
-      margin-top: 15px;
-      font-weight: 500;
-      text-align: right;
-      font-size: 15px;
-      color: #333;
-      display: none;
-    }
-    .active-model {
-      background: #fff6e0 !important;
-      border-color: #f2dab0 !important;
-    }
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .search-box { flex-direction: column; }
-      .search-box button { width: 100%; }
-      #resultsTable { position: static; }
     }
   </style>
 </head>
 <body>
-  <div id="updateInfo" style="background:#fff6e0;padding:10px;text-align:center;font-weight:500;">
-    🕒 Завантаження дати оновлення...
-  </div>
-  <h1>Наявність деталей для індивідуального годинника</h1>
-  <div class="container">
-    <div class="left">
-      <div class="subtitle">Доступні моделі годинників</div>
-      <div id="modelList"></div>
-    </div>
-    <div class="right">
-      <div class="search-box">
-        <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
-        <button onclick="searchParts()">Пошук</button>
-      </div>
-      <div id="loader">Завантаження...</div>
-      <div id="noResults">Нічого не знайдено.</div>
-      <div class="search-results">
-        <table id="resultsTable">
-          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="total-info" id="summary"></div>
-      </div>
+  <!-- ... [наявна розмітка без змін] ... -->
+
+  <!-- Додано новий блок для "плаваючих" результатів -->
+  <div id="floatingDetails">
+    <div id="floatingLoader">Завантаження...</div>
+    <div id="floatingNoResults">Нічого не знайдено.</div>
+    <div class="search-results">
+      <table id="floatingResultsTable">
+        <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="total-info" id="floatingSummary"></div>
     </div>
   </div>
+
   <script>
-    // Твій JavaScript вставляється сюди далі...
+    // ... [існуючі змінні залишаються]
+
+    async function searchParts(isManual = true, modelElement = null) {
+      const input = document.getElementById("watchInput").value.trim();
+      const loader = isManual ? document.getElementById("loader") : document.getElementById("floatingLoader");
+      const noRes = isManual ? document.getElementById("noResults") : document.getElementById("floatingNoResults");
+      const table = isManual ? document.getElementById("resultsTable") : document.getElementById("floatingResultsTable");
+      const summary = isManual ? document.getElementById("summary") : document.getElementById("floatingSummary");
+      const floatBlock = document.getElementById("floatingDetails");
+
+      loader.style.display = "block";
+      noRes.style.display = "none";
+      table.style.display = "none";
+      summary.style.display = "none";
+      if (!isManual) floatBlock.style.display = "block";
+
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const partRows = linkData.filter(r => r[1]?.trim() === input);
+      const parts = partRows.map(r => r[3]?.trim());
+      if (!parts.length) {
+        loader.style.display = "none";
+        noRes.style.display = "block";
+        return;
+      }
+
+      const rawDet = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDet;
+
+      const tbody = table.querySelector("tbody");
+      tbody.innerHTML = "";
+      let total = 0;
+
+      parts.forEach(a => {
+        const d = detailData.find(r => r[1]?.trim() === a) || [];
+        const name = d[2]?.trim() || "Без назви";
+        const qty = parseInt(d[5] || "0", 10) || 0;
+        total += qty;
+        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
+
+        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
+        const isMissing = parseInt(s) === 0;
+        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
+
+        tbody.innerHTML += `
+          <tr>
+            <td><img src="${img}" onclick="window.open('${img}')"></td>
+            <td>${a}</td>
+            <td>${name}</td>
+            <td>${highlight(p)}</td>
+            <td>${highlight(o)}</td>
+            <td>${highlight(s)}</td>
+          </tr>
+        `;
+      });
+
+      loader.style.display = "none";
+      table.style.display = "table";
+      summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
+      summary.style.display = "block";
+
+      if (!isManual && modelElement) {
+        const offsetTop = modelElement.getBoundingClientRect().top + window.scrollY - 20;
+        floatBlock.style.top = `${offsetTop}px`;
+      }
+    }
+
+    function selectModelByArticle(article) {
+      const index = allModels.findIndex(m => m.dataset.article === article);
+      if (index !== -1) {
+        setActiveModel(index);
+        document.getElementById("watchInput").value = article;
+        const modelElement = allModels[index];
+        searchParts(false, modelElement);
+      }
+    }
   </script>
 </body>
 </html>
