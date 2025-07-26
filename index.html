@@ -8,226 +8,331 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #e6e6e6;
+      background: #e6e6e6;
       color: #111;
+      font-size: 16px;
     }
     h1 {
       text-align: center;
-      margin: 30px 0 10px;
+      margin: 30px 0;
       font-size: 28px;
       font-weight: 600;
     }
     .container {
       display: flex;
+      flex-wrap: wrap;
       gap: 30px;
-      padding: 0 20px 50px;
-      max-width: 1300px;
+      padding: 0 20px 30px;
+      max-width: 1200px;
       margin: 0 auto;
     }
-    .left {
-      flex: 1;
+    .left, .right {
       background: #fff;
+      padding: 25px;
       border-radius: 12px;
-      padding: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      flex: 1;
+      min-width: 300px;
     }
-    .model {
+    .right {
+      background: #fafafa;
+      border-left: 2px solid #ddd;
+    }
+    .subtitle {
+      font-size: 20px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .model-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      padding: 15px;
       margin-bottom: 10px;
-      border: 2px solid transparent;
+      background: #fff;
+      border: 1px solid #ccc;
       border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      background: #fff;
+      transition: 0.2s;
+      position: relative;
     }
-    .model:hover {
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transform: translateY(-1px);
+    .model-item:hover {
+      transform: scale(1.01);
+      border-color: #007bff;
     }
-    .model.active {
-      background: #fff7e6;
-      border: 2px solid #ffe0a3;
+    .model-item img {
+      height: 50px;
+      margin-right: 10px;
     }
     .status-dot {
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       margin-left: auto;
     }
-    .status-green { background: #22c55e; }
-    .status-red { background: #ef4444; }
-
-    .right {
-      width: 400px;
+    .status-green {
+      background: #26c281;
+      box-shadow: 0 0 0 3px #c3f3df inset;
     }
-
+    .status-red {
+      background: #ff4d4d;
+      box-shadow: 0 0 0 3px #ffdada inset;
+    }
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
     .search-box input {
       flex: 1;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 10px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 17px;
     }
     .search-box button {
-      background: #111;
-      color: #fff;
+      padding: 12px 24px;
       border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
+      border-radius: 10px;
+      background-color: #111;
+      color: white;
       cursor: pointer;
+      font-size: 17px;
     }
-
-    .details-popup {
+    .floating-results {
       position: absolute;
-      z-index: 10;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      padding: 20px;
-      width: 640px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      width: 100%;
+      z-index: 100;
+      overflow-x: auto;
     }
-    .details-popup table {
+    .floating-results table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 10px;
     }
-    .details-popup th, .details-popup td {
+    .floating-results th, .floating-results td {
       padding: 8px;
-      border: 1px solid #ccc;
-      text-align: left;
-      font-size: 14px;
+      border: 1px solid #eee;
+      text-align: center;
+      font-size: 15px;
     }
-    .details-popup .close-btn {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      font-size: 18px;
+    .floating-results img {
+      max-height: 60px;
+      object-fit: contain;
       cursor: pointer;
-      color: #888;
+      transition: transform 0.2s ease;
     }
-    .details-popup .close-btn:hover {
-      color: #000;
+    .floating-results img:hover {
+      transform: scale(2);
+      z-index: 999;
     }
-
+    .close-btn {
+      position: absolute;
+      top: 6px;
+      right: 12px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+    .red-text {
+      color: #e63946;
+      font-weight: bold;
+    }
+    .active-model {
+      background: #fff6e0 !important;
+      border-color: #f2dab0 !important;
+    }
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      .details-popup {
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 95% !important;
-      }
+      .container { flex-direction: column; }
+      .search-box { flex-direction: column; }
+      .search-box button { width: 100%; }
     }
   </style>
 </head>
 <body>
+  <div id="updateInfo" style="background:#fff6e0;padding:10px;text-align:center;font-weight:500;">
+    🕒 Завантаження дати оновлення...
+  </div>
   <h1>Наявність деталей для індивідуального годинника</h1>
   <div class="container">
-    <div class="left" id="modelList"></div>
+    <div class="left">
+      <div class="subtitle">Доступні моделі годинників</div>
+      <div id="modelList"></div>
+    </div>
     <div class="right">
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Введіть артикул моделі..." />
-        <button onclick="searchModel()">Пошук</button>
+        <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
+        <button onclick="searchParts('manual')">Пошук</button>
       </div>
     </div>
   </div>
 
+  <div id="resultsPopup" class="floating-results" style="display:none">
+    <div class="close-btn" onclick="closePopup()">×</div>
+    <table>
+      <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
   <script>
-    const models = [
-      { code: "1202-0163", name: "020 Silver-Silver", status: "green" },
-      { code: "1202-0162", name: "020 Gold-Gold", status: "green" },
-      { code: "1202-0267", name: "021 Black Leather", status: "green" },
-      { code: "1202-0268", name: "021 Silver Leather", status: "red" },
-      { code: "1202-0269", name: "021 Gold Leather", status: "red" },
-      { code: "1202-0270", name: "021 Black Steel", status: "green" },
-      { code: "1202-0271", name: "021 Silver Steel", status: "red" },
-      { code: "1202-0272", name: "021 Black Mesh", status: "green" },
-      { code: "1202-0273", name: "021 Silver Mesh", status: "red" }
-    ];
+    const SHEET_ID = "1VE0UbNuQu0f9BfmkRbKuQpa5xQr9q8XGUKGXmCkxwwI";
+    const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
+    const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
+    let allModels = [];
+    let currentModelIndex = -1;
 
-    let currentIndex = -1;
+    async function fetchSheet(range) {
+      const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
+      const data = await res.json();
+      return data.values || [];
+    }
 
-    const modelList = document.getElementById("modelList");
+    async function loadAvailableModels() {
+      const raw = await fetchSheet("Годинники!A:D");
+      const [, ...rows] = raw;
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const rawDetail = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDetail;
+      const container = document.getElementById("modelList");
 
-    models.forEach((m, idx) => {
-      const div = document.createElement("div");
-      div.className = "model";
-      div.dataset.code = m.code;
-      div.innerHTML = `<strong>${m.code}</strong> — ${m.name} <span class="status-dot status-${m.status}"></span>`;
-      div.addEventListener("click", () => showDetails(m.code, div));
-      modelList.appendChild(div);
-    });
+      rows.forEach(r => {
+        const article = (r[2] || "").trim();
+        const name = (r[3] || "").trim();
+        if (!/^(1201|1202)-/.test(article)) return;
+        if (/^(Сталевий браслет|Годинник наручний)/.test(name)) return;
 
-    function searchModel() {
-      const val = document.getElementById("searchInput").value.trim();
-      const target = [...document.querySelectorAll(".model")].find(el => el.dataset.code === val);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-        highlightModel(target);
-        showDetails(val, target, true);
+        const imgURL = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${article}.jpg`;
+        const div = document.createElement("div");
+        div.className = "model-item";
+        div.dataset.article = article;
+        div.onclick = () => selectModelByArticle(article, div);
+        div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
+
+        const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
+        let statusClass = 'status-green';
+        if (needed.length === 0) statusClass = 'status-red';
+        else {
+          const missing = needed.some(p => {
+            const f = detailData.find(d => d[1]?.trim() === p);
+            return !(parseInt(f?.[5] || "0", 10));
+          });
+          if (missing) statusClass = 'status-red';
+        }
+        div.querySelector('.status-dot').classList.add(statusClass);
+        container.appendChild(div);
+      });
+
+      allModels = [...document.querySelectorAll(".model-item")];
+    }
+
+    function selectModelByArticle(article, element = null) {
+      const index = allModels.findIndex(m => m.dataset.article === article);
+      if (index !== -1) {
+        setActiveModel(index);
+        document.getElementById("watchInput").value = article;
+        searchParts('model', element);
       }
     }
 
-    function highlightModel(target) {
-      document.querySelectorAll(".model").forEach(el => el.classList.remove("active"));
-      target.classList.add("active");
-      currentIndex = [...document.querySelectorAll(".model")].indexOf(target);
+    function setActiveModel(index) {
+      if (currentModelIndex >= 0) {
+        allModels[currentModelIndex].classList.remove("active-model");
+      }
+      currentModelIndex = index;
+      allModels[currentModelIndex].classList.add("active-model");
+      allModels[currentModelIndex].scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    function showDetails(code, el, fromSearch = false) {
-      const rect = el.getBoundingClientRect();
-      const existing = document.querySelector(".details-popup");
-      if (existing) existing.remove();
+    async function searchParts(mode = 'manual', clickedElement = null) {
+      const input = document.getElementById("watchInput").value.trim();
+      const rawLink = await fetchSheet("Комплектації!A:D");
+      const [, ...linkData] = rawLink;
+      const partRows = linkData.filter(r => r[1]?.trim() === input);
+      const parts = partRows.map(r => r[3]?.trim());
+      const rawDet = await fetchSheet("Деталі!A:F");
+      const [, ...detailData] = rawDet;
+      const body = document.getElementById("resultsBody");
+      const popup = document.getElementById("resultsPopup");
 
-      const popup = document.createElement("div");
-      popup.className = "details-popup";
-      popup.innerHTML = `
-        <div class="close-btn" onclick="this.parentElement.remove()">×</div>
-        <table>
-          <thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead>
-          <tbody>
-            <tr><td><img src="https://via.placeholder.com/40" /></td><td>0000-0001</td><td>Деталь 1</td><td>10</td><td>2</td><td>8</td></tr>
-            <tr><td><img src="https://via.placeholder.com/40" /></td><td>0000-0002</td><td>Деталь 2</td><td>20</td><td>5</td><td>15</td></tr>
-          </tbody>
-        </table>
-        <div style="font-size:13px;padding-top:4px;">Загальна кількість деталей: 2 | Сумарний залишок: 23 од.</div>
-      `;
+      if (!parts.length) {
+        body.innerHTML = `<tr><td colspan="6">Немає доступних запчастин</td></tr>`;
+        popup.style.display = "block";
+        return;
+      }
 
-      document.body.appendChild(popup);
-      const topOffset = window.scrollY + rect.top;
-      popup.style.top = fromSearch ? "130px" : `${topOffset}px`;
-      popup.style.left = fromSearch ? "50%" : `${rect.right + 20}px`;
-      popup.style.transform = fromSearch ? "translateX(-50%)" : "none";
+      body.innerHTML = "";
+      parts.forEach(a => {
+        const d = detailData.find(r => r[1]?.trim() === a) || [];
+        const name = d[2]?.trim() || "Без назви";
+        const qty = parseInt(d[5] || "0", 10) || 0;
+        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
+        const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
+        const isMissing = parseInt(s) === 0;
+        const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
 
-      highlightModel(el);
+        body.innerHTML += `
+          <tr>
+            <td><img src="${img}" onclick="window.open('${img}')"></td>
+            <td>${a}</td>
+            <td>${name}</td>
+            <td>${highlight(p)}</td>
+            <td>${highlight(o)}</td>
+            <td>${highlight(s)}</td>
+          </tr>
+        `;
+      });
+
+      popup.style.display = "block";
+      if (mode === 'model' && clickedElement) {
+        const rect = clickedElement.getBoundingClientRect();
+        popup.style.position = "fixed";
+        popup.style.top = `${rect.top + window.scrollY}px`;
+        popup.style.left = `${rect.right + 10}px`;
+        popup.style.width = `600px`;
+      } else {
+        popup.style.position = "static";
+        popup.style.width = "100%";
+      }
     }
 
-    document.addEventListener("keydown", (e) => {
-      const list = [...document.querySelectorAll(".model")];
-      if (e.key === "ArrowDown") {
-        currentIndex = (currentIndex + 1) % list.length;
-        list[currentIndex].scrollIntoView({ block: "center", behavior: "smooth" });
-        highlightModel(list[currentIndex]);
-        showDetails(list[currentIndex].dataset.code, list[currentIndex]);
-      } else if (e.key === "ArrowUp") {
-        currentIndex = (currentIndex - 1 + list.length) % list.length;
-        list[currentIndex].scrollIntoView({ block: "center", behavior: "smooth" });
-        highlightModel(list[currentIndex]);
-        showDetails(list[currentIndex].dataset.code, list[currentIndex]);
-      } else if (e.key === "Escape") {
-        const popup = document.querySelector(".details-popup");
-        if (popup) popup.remove();
+    function closePopup() {
+      document.getElementById("resultsPopup").style.display = "none";
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closePopup();
+      if (e.key === "ArrowDown" && currentModelIndex < allModels.length - 1) {
+        setActiveModel(currentModelIndex + 1);
+        document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
+        searchParts('model', allModels[currentModelIndex]);
+      }
+      if (e.key === "ArrowUp" && currentModelIndex > 0) {
+        setActiveModel(currentModelIndex - 1);
+        document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
+        searchParts('model', allModels[currentModelIndex]);
       }
     });
+
+    async function loadLastUpdatedDate() {
+      const raw = await fetchSheet("Залишки!K1");
+      const date = raw?.[0]?.[0] || "невідомо";
+      document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
+    }
+
+    document.getElementById("watchInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") searchParts('manual');
+    });
+
+    window.onload = async () => {
+      await Promise.all([
+        loadAvailableModels(),
+        loadLastUpdatedDate()
+      ]);
+    };
   </script>
 </body>
 </html>
