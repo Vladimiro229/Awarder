@@ -10,45 +10,35 @@
       font-family: 'Segoe UI', sans-serif;
       background: #e6e6e6;
       color: #111;
-      font-size: 16px;
     }
     h1 {
       text-align: center;
-      margin: 30px 0;
+      margin: 20px 0;
       font-size: 28px;
       font-weight: 600;
     }
     .container {
       display: flex;
-      flex-wrap: wrap;
       gap: 30px;
       padding: 0 20px 30px;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
+      position: relative;
     }
-    .left, .right {
+    .left {
       background: #fff;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      flex: 1;
-      min-width: 300px;
-      position: relative;
+      flex: 0 0 400px;
     }
     .right {
-      background: #fafafa;
-      border-left: 2px solid #ddd;
-    }
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      text-align: center;
+      flex: 1;
     }
     .model-item {
       display: flex;
       align-items: center;
-      padding: 15px;
+      padding: 12px;
       margin-bottom: 10px;
       background: #fff;
       border: 1px solid #ccc;
@@ -81,14 +71,14 @@
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     .search-box input {
       flex: 1;
       padding: 12px;
       border-radius: 10px;
       border: 1px solid #ccc;
-      font-size: 17px;
+      font-size: 16px;
     }
     .search-box button {
       padding: 12px 24px;
@@ -97,62 +87,47 @@
       background-color: #111;
       color: white;
       cursor: pointer;
-      font-size: 17px;
+      font-size: 16px;
     }
-    .search-results {
-      margin-top: 15px;
-    }
-    #resultsTable {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
+    #floatingTable {
+      position: absolute;
+      left: 450px;
+      width: calc(100% - 480px);
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 12px;
       overflow: hidden;
+      z-index: 99;
       display: none;
     }
-    #resultsTable th, #resultsTable td {
-      padding: 8px;
+    #floatingTable table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #floatingTable th, #floatingTable td {
+      padding: 10px;
       border: 1px solid #eee;
       text-align: center;
       font-size: 15px;
     }
-    #resultsTable img {
+    #floatingTable img {
       max-height: 60px;
-      object-fit: contain;
       cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    #resultsTable img:hover {
-      transform: scale(2);
-      z-index: 999;
     }
     .red-text {
       color: #e63946;
       font-weight: bold;
     }
-    #loader, #noResults {
-      text-align: center;
-      margin-top: 10px;
-      font-style: italic;
-      color: #555;
-      display: none;
-    }
     .total-info {
-      margin-top: 10px;
+      font-size: 14px;
       font-weight: 500;
-      text-align: right;
-      font-size: 15px;
+      text-align: center;
+      padding: 10px;
       color: #333;
-      display: none;
     }
     .active-model {
       background: #fff6e0 !important;
       border-color: #f2dab0 !important;
-    }
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .search-box { flex-direction: column; }
-      .search-box button { width: 100%; }
     }
   </style>
 </head>
@@ -168,23 +143,11 @@
     </div>
     <div class="right">
       <div class="search-box">
-        <input id="watchInput" placeholder="Введіть артикул моделі..." />
+        <input id="watchInput" placeholder="Введіть артикул, напр. 1202-0252" />
         <button onclick="searchParts()">Пошук</button>
       </div>
-      <div id="loader">Завантаження...</div>
-      <div id="noResults">Нічого не знайдено.</div>
-      <div class="search-results">
-        <table id="resultsTable">
-          <thead>
-            <tr>
-              <th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <div class="total-info" id="summary"></div>
-      </div>
     </div>
+    <div id="floatingTable"></div>
   </div>
 
   <script>
@@ -192,7 +155,6 @@
     const API_KEY = "AIzaSyB2l87TIEyJwO1BMDkE_IHMaXG6k2N3rEw";
     const baseURL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/`;
     let allModels = [];
-    let currentModelIndex = -1;
 
     async function fetchSheet(range) {
       const res = await fetch(`${baseURL}${encodeURIComponent(range)}?key=${API_KEY}`);
@@ -209,7 +171,7 @@
       const [, ...detailData] = rawDetail;
       const container = document.getElementById("modelList");
 
-      rows.forEach(r => {
+      rows.forEach((r, i) => {
         const article = (r[2] || "").trim();
         const name = (r[3] || "").trim();
         if (!/^(1201|1202)-/.test(article)) return;
@@ -219,119 +181,65 @@
         const div = document.createElement("div");
         div.className = "model-item";
         div.dataset.article = article;
-        div.onclick = () => selectModelByArticle(article);
         div.innerHTML = `<img src="${imgURL}"><div><strong>${article}</strong> — ${name}</div><span class="status-dot"></span>`;
+        container.appendChild(div);
 
         const needed = linkData.filter(x => x[1]?.trim() === article).map(x => x[3]?.trim());
-        let statusClass = 'status-green';
-        if (needed.length === 0) {
-          statusClass = 'status-red';
-        } else {
-          const missing = needed.some(p => {
-            const f = detailData.find(d => d[1]?.trim() === p);
-            return !(parseInt(f?.[5] || "0", 10));
-          });
-          if (missing) statusClass = 'status-red';
-        }
-
+        const statusClass = needed.some(p => {
+          const f = detailData.find(d => d[1]?.trim() === p);
+          return !(parseInt(f?.[5] || "0", 10));
+        }) ? 'status-red' : 'status-green';
         div.querySelector('.status-dot').classList.add(statusClass);
-        container.appendChild(div);
+
+        div.onclick = () => {
+          allModels.forEach(m => m.classList.remove("active-model"));
+          div.classList.add("active-model");
+          document.getElementById("watchInput").value = article;
+          showParts(article, div);
+        };
+
+        allModels.push(div);
       });
-
-      allModels = [...document.querySelectorAll(".model-item")];
     }
 
-    function selectModelByArticle(article) {
-      const index = allModels.findIndex(m => m.dataset.article === article);
-      if (index !== -1) {
-        setActiveModel(index);
-        document.getElementById("watchInput").value = article;
-        searchParts();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-
-    function setActiveModel(index) {
-      if (currentModelIndex >= 0) {
-        allModels[currentModelIndex].classList.remove("active-model");
-      }
-      currentModelIndex = index;
-      allModels[currentModelIndex].classList.add("active-model");
-      allModels[currentModelIndex].scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowDown") {
-        if (currentModelIndex < allModels.length - 1) {
-          setActiveModel(currentModelIndex + 1);
-          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
-          searchParts();
-        }
-      }
-      if (e.key === "ArrowUp") {
-        if (currentModelIndex > 0) {
-          setActiveModel(currentModelIndex - 1);
-          document.getElementById("watchInput").value = allModels[currentModelIndex].dataset.article;
-          searchParts();
-        }
-      }
-    });
-
-    async function searchParts() {
-      const input = document.getElementById("watchInput").value.trim();
-      const loader = document.getElementById("loader");
-      const noRes = document.getElementById("noResults");
-      const table = document.getElementById("resultsTable");
-      const summary = document.getElementById("summary");
-      loader.style.display = "block";
-      noRes.style.display = "none";
-      table.style.display = "none";
-      summary.style.display = "none";
-
+    async function showParts(article, anchorElement) {
+      const tableDiv = document.getElementById("floatingTable");
       const rawLink = await fetchSheet("Комплектації!A:D");
       const [, ...linkData] = rawLink;
-      const partRows = linkData.filter(r => r[1]?.trim() === input);
+      const partRows = linkData.filter(r => r[1]?.trim() === article);
       const parts = partRows.map(r => r[3]?.trim());
-      if (!parts.length) {
-        loader.style.display = "none";
-        noRes.style.display = "block";
-        return;
-      }
+      if (!parts.length) return tableDiv.style.display = "none";
 
       const rawDet = await fetchSheet("Деталі!A:F");
       const [, ...detailData] = rawDet;
 
-      const tbody = document.querySelector("#resultsTable tbody");
-      tbody.innerHTML = "";
+      let html = `
+        <table><thead><tr><th>Фото</th><th>Артикул</th><th>Назва</th><th>Прихід</th><th>Розхід</th><th>Залишок</th></tr></thead><tbody>`;
       let total = 0;
 
       parts.forEach(a => {
         const d = detailData.find(r => r[1]?.trim() === a) || [];
-        const name = d[2]?.trim() || "Без назви";
-        const qty = parseInt(d[5] || "0", 10) || 0;
-        total += qty;
-        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
-
+        const name = d[2] || "—";
         const p = d[3] || "0", o = d[4] || "0", s = d[5] || "0";
+        const qty = parseInt(s || "0", 10) || 0;
+        total += qty;
         const isMissing = parseInt(s) === 0;
         const highlight = v => (isMissing && parseInt(v) === 0 ? `<span class="red-text">${v}</span>` : v);
+        const img = `https://abertime.com.ua/image/data/price_google/all_price/big/SK-${a}.jpg`;
 
-        tbody.innerHTML += `
-          <tr>
-            <td><img src="${img}" onclick="window.open('${img}')"></td>
-            <td>${a}</td>
-            <td>${name}</td>
-            <td>${highlight(p)}</td>
-            <td>${highlight(o)}</td>
-            <td>${highlight(s)}</td>
-          </tr>
-        `;
+        html += `<tr>
+          <td><img src="${img}" onclick="window.open('${img}')"></td>
+          <td>${a}</td><td>${name}</td>
+          <td>${highlight(p)}</td><td>${highlight(o)}</td><td>${highlight(s)}</td>
+        </tr>`;
       });
 
-      loader.style.display = "none";
-      table.style.display = "table";
-      summary.innerText = `Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.`;
-      summary.style.display = "block";
+      html += `</tbody></table><div class="total-info">Загальна кількість деталей: ${parts.length} | Сумарний залишок: ${total} од.</div>`;
+      tableDiv.innerHTML = html;
+
+      const modelTop = anchorElement.getBoundingClientRect().top + window.scrollY - 10;
+      tableDiv.style.top = modelTop + "px";
+      tableDiv.style.display = "block";
     }
 
     async function loadLastUpdatedDate() {
@@ -340,15 +248,9 @@
       document.getElementById("updateInfo").innerText = `🕒 Останнє оновлення даних: ${date}`;
     }
 
-    document.getElementById("watchInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") searchParts();
-    });
-
     window.onload = async () => {
-      await Promise.all([
-        loadAvailableModels(),
-        loadLastUpdatedDate()
-      ]);
+      await loadAvailableModels();
+      await loadLastUpdatedDate();
     };
   </script>
 </body>
